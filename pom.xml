@@ -11,7 +11,7 @@
 
     <name>ymsw</name>
     <url>http://www.yingmaosw.cn/</url>
-    <description>贷款客户管理系统22222</description>
+    <description>贷款客户管理系统</description>
 
     <properties>
         <ymsw.version>1.0-SNAPSHOT</ymsw.version>

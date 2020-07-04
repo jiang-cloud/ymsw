@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-admin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-common" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-customer" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-framework" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-generator" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-order" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-quartz" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-quota" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-report" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ymsw-system" charset="UTF-8" />
+  </component>
+</project>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('配额管理列表')" />
+    <th:block th:include="include :: bootstrap-editable-css" />
+    <th:block th:include="include :: select2-css" />
+    <style>
+        #bootstrap-table>thead>tr {background-color: rgb(237,85,101);color: white;}
+        #bootstrap-table>thead>tr>th {border: 1px solid white;font-size: 15px}
+        #bootstrap-table>tbody>tr:nth-child(odd) {background: rgba(237, 255, 245, 0.68);}
+        body{font-size: 15px}
+    </style>
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse" style="padding-left: 30px">
+                <div class="form-inline">
+                    <div class="row">
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">配额总数</div>
+                            <input type="text" class="form-control" value="125" disabled id="countTotal" style="color: red;font-weight: bold">
+                        </div>
+                        <div class="input-group col-xs-2 col-xs-offset-1">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">配额设置</div>
+                            <input type="number" class="form-control" min="0" id="allowTodayCount">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 search-collapse" style="padding-left: 30px">
+                <form id="formId" class="form-inline">
+                    <div class="row">
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">姓名</div>
+                            <input type="text" class="form-control" name="params[userName]">
+                        </div>
+                        <div class="input-group col-xs-2 col-xs-offset-1">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">手机号</div>
+                            <input type="text" class="form-control" name="params[phonenumber]">
+                        </div>
+                        <div class="input-group col-xs-2 col-xs-offset-1">
+                            <div class="input-group-addon " style="background-color: #efefef;width: 50%">所属组织</div>
+                            <select name="params[deptId]" class="form-control">
+                                <option value="">-不限-</option>
+                                <option th:each="sysDept,sysDepts:${sysDepts}" th:value="${sysDept.deptId}" th:text="${sysDept.deptName}"></option>
+                            </select>
+                        </div>
+                        <a class="btn btn-primary btn-rounded btn-md" style="margin-left: 20px" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-md" id="toolbar" role="group">
+                <a class="btn btn-warning multiple disabled" onclick="batchDisable()" shiro:hasPermission="quota:main:edit">
+                    <i class="fa fa-times-circle"></i> 暂停
+                </a>
+                <a class="btn btn-warning multiple disabled" onclick="batchEnable()" shiro:hasPermission="quota:main:edit">
+                    <i class="fa fa-refresh"></i> 恢复
+                </a>
+            </div>
+
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: bootstrap-table-editable-js" />
+     <th:block th:include="include :: select2-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('quota:main:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('quota:main:remove')}]];
+        var prefix = ctx + "quota/main";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                // createUrl: prefix + "/add",
+                // updateUrl: prefix + "/edit/{id}",
+                //removeUrl: prefix + "/batchChangeStatus",
+                // exportUrl: prefix + "/export",
+                modalName: "配额管理",
+                striped: true,//隔行换色
+                showToggle: false,
+                onEditableSave: editAllowTodayCount,
+                rememberSelected: true,
+                uniqueId: "quotaId",
+                columns: [{
+                    field: 'state',
+                    checkbox: true
+                },
+                {
+                    field : 'quotaId',
+                    title : '编号',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'userName',
+                    title : '姓名',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'phonenumber',
+                    title : '业务手机',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'allowTodayCount', 
+                    title : '配额',
+                    halign: 'center',
+                    align: 'center',
+                    editable : {
+                        type : 'text',
+                        title : '配额',
+                        min: 0,
+                        emptytext : "【配额】为空",
+                        validate : function(value) {
+                            if (!value) return '配额不能为空';
+                            if (isNaN(value)) return '必须是数字';
+                            var r = /^\d+$/;
+                            if (!r.test(value)) return '必须是正整数';
+                        }
+                    }
+                },
+                {
+                    field : 'nowTodayCount', 
+                    title : '已分配',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'quotaStatus', 
+                    title : '状态',
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function (value, row, index) {
+                        return statusTools(row);
+                    }
+                }/*,
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.quotaId + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.quotaId + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }*/]
+            };
+            $.table.init(options);
+        });
+
+        /* 配额状态显示 */
+        function statusTools(row) {
+            if (row.quotaStatus == 0) {
+                return '<i class=\"fa fa-toggle-off text-info fa-2x\" onclick="enable(\'' + row.quotaId + '\')"></i> ';
+            } else {
+                return '<i class=\"fa fa-toggle-on text-info fa-2x\" onclick="disable(\'' + row.quotaId + '\')"></i> ';
+            }
+        }
+
+        /* 配额管理-停用 */
+        function disable(quotaId) {
+            $.modal.confirm("确定要暂停吗？", function() {
+                $.operate.post(prefix + "/batchChangeStatus", { "ids": quotaId, "quotaStatus": 0 });
+            })
+        }
+
+        /* 配额管理启用 */
+        function enable(quotaId) {
+            $.modal.confirm("确定要恢复吗？", function() {
+                $.operate.post(prefix + "/batchChangeStatus", { "ids": quotaId, "quotaStatus": 1 });
+            })
+        }
+
+        // 批量暂停
+        function batchDisable() {
+            var uniqueId = table.options.uniqueId;
+            // 工具栏按钮控制
+            var rows = $.common.isEmpty(uniqueId) ? $.table.selectFirstColumns() : $.table.selectColumns(uniqueId);
+            var quotaStatusList = $.table.selectColumns("quotaStatus");
+            var submitFlag = false;
+            if (rows.length == 0) {
+                $.modal.alertWarning("请至少选择一条记录");
+                return;
+            }
+            for (var i=0;i<quotaStatusList.length;i++){
+                if (quotaStatusList[i] == "0"){
+                    submitFlag = true;
+                }
+            }
+            if (submitFlag){
+                $.modal.alertWarning("勾选信息有误");
+                return;
+            }
+            $.modal.confirm("确定要将选中的" + rows.length + "条数据暂停吗?", function() {
+                var url = prefix + "/batchChangeStatus";
+                var data = { "ids": rows.join(), "quotaStatus":0 };
+                $.operate.submit(url, "post", "json", data);
+            });
+        }
+
+        // 批量恢复
+        function batchEnable() {
+            var uniqueId = table.options.uniqueId;
+            // 工具栏按钮控制
+            var rows = $.common.isEmpty(uniqueId) ? $.table.selectFirstColumns() : $.table.selectColumns(uniqueId);
+            var quotaStatusList = $.table.selectColumns("quotaStatus");
+            var submitFlag = false;
+            if (rows.length == 0) {
+                $.modal.alertWarning("请至少选择一条记录");
+                return;
+            }
+            for (var i=0;i<quotaStatusList.length;i++){
+                if (quotaStatusList[i] == "1"){
+                    submitFlag = true;
+                }
+            }
+            if (submitFlag){
+                $.modal.alertWarning("勾选信息有误");
+                return;
+            }
+            $.modal.confirm("确定要将选中的" + rows.length + "条数据恢复吗?", function() {
+                var url = prefix + "/batchChangeStatus";
+                var data = { "ids": rows.join(), "quotaStatus":1 };
+                $.operate.submit(url, "post", "json", data);
+            });
+        }
+
+        //单元格内修改配额
+        function editAllowTodayCount (field, row, oldValue, $el) {
+            var allowTodayCount = row[field];
+            var quotaId = row.quotaId;
+            $.operate.submit(prefix + "/edit", "post", "json", {"allowTodayCount":allowTodayCount,"quotaId":quotaId},function () {
+                countTotal();   //回显配额总数
+            });
+        }
+
+        //回显配额总数
+        $(function () {
+            countTotal();
+        })
+
+        function countTotal(){
+            $.ajax({
+                type: "POST",
+                url: prefix + "/countTotal",
+                dataType:"json",
+                success: function(result){
+                    $("#countTotal").val(result.data);
+                }
+            });
+        }
+
+        //批量配额设置
+        $("#allowTodayCount").blur(function () {
+            var url = prefix + "/batchEdit";
+            var data;
+            var allowTodayCount = $(this).val();
+            var r = /^\d+$/;
+            if (!r.test(allowTodayCount)){
+                $.modal.msgError("请输入正整数！");
+            }else {
+                var uniqueId = table.options.uniqueId;
+                // 工具栏按钮控制
+                var rows = $.common.isEmpty(uniqueId) ? $.table.selectFirstColumns() : $.table.selectColumns(uniqueId);
+                if (rows.length == 0) {
+                    $.modal.confirm("确定设置所有配额？",function () {
+                        data = { "ids":null, "allowTodayCount":allowTodayCount};
+                        $.operate.submit(url, "post", "json", data,function () {
+                            $.ajax({
+                                type: "POST",
+                                url: prefix + "/countTotal",
+                                dataType:"json",
+                                success: function(result){
+                                    $("#countTotal").val(result.data);
+                                }
+                            });
+                        });
+                    });
+                }else {
+                    $.modal.confirm("确定设置"+rows.length+"条数据的配额？",function () {
+                        data = { "ids":rows.join(), "allowTodayCount":allowTodayCount};
+                        $.operate.submit(url, "post", "json", data,function () {
+                            $.ajax({
+                                type: "POST",
+                                url: prefix + "/countTotal",
+                                dataType:"json",
+                                success: function(result){
+                                    $("#countTotal").val(result.data);
+                                }
+                            });
+                        });
+                    });
+                }
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <th:block th:include="include :: header('客户详情')"/>
+    <th:block th:include="include :: datetimepicker-css"/>
+    <th:block th:include="include :: select2-css" />
+    <style>
+        body{font-size: 15px}
+    </style>
+</head>
+<body style="background-color: #efefef;">
+    <input id="customerId" name="customerId" type="hidden" th:value="${ymswCustomer.customerId}"/>
+    <div class="ibox-content"  style="background-color: #efefef;">
+        <div class="form-inline search-collapse" style="padding:10px 10px;margin-top: -8px">
+            <div class="form-group">
+                <label for="exampleInputName2">姓名：</label>
+                <input type="text" class="form-control" id="exampleInputName2" readonly th:value="${ymswCustomer.customerName}">
+            </div>
+            <div class="form-group" style="margin-left: 20px">
+                <label for="exampleInputEmail2">手机：</label>
+                <input type="text" class="form-control" id="exampleInputEmail2" readonly th:value="${ymswCustomer.customerPhone}">
+            </div>
+            <div class="form-group" style="margin-left: 20px">
+                <label for="exampleInputEmail2">性别：</label>
+                <input type="text" class="form-control" id="exampleInputEmail2" readonly th:with="sex=${ymswCustomer.customerSex}" th:value="${@dict.getLabel('sys_user_sex', sex)}">
+            </div>
+            <div class="form-group" style="margin-left: 20px">
+                <label for="exampleInputEmail2">年龄：</label>
+                <input type="text" class="form-control" id="exampleInputEmail2" readonly th:value="${ymswCustomer.customerBirth}">
+            </div>
+            <div class="form-group" style="margin-left: 20px">
+                <label for="exampleInputEmail2">额度（万）：</label>
+                <input type="text" class="form-control" id="exampleInputEmail2" readonly th:value="${ymswCustomer.customerQuota}">
+            </div>
+            <a class="btn btn-warning btn-md" shiro:hasPermission="task:main:add" onclick="$.modal.open('设置定时提醒', ctx+'task/main/add', 500, 450);" style="margin-left: 20px">
+                <i class="glyphicon glyphicon-bell"></i> 定时提醒
+            </a>
+        </div>
+        <div class="search-collapse" style="padding:10px 10px;">
+            <form class="form-inline" id="form-main-edit" th:object="${ymswCustomer}">
+                <input name="customerId" th:field="*{customerId}" type="hidden">
+                <input type="text" hidden th:value="*{customerName}" name="customerName">
+                <div class="input-group col-xs-2">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%">星级</div>
+                    <select name="customerStar" class="form-control" th:with="type=${@dict.getType('customer_star')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{customerStar}"></option>
+                    </select>
+                </div>
+
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%">状态</div>
+                    <select name="customerStatus" class="form-control"
+                            th:with="type=${@dict.getType('customer_status')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{customerStatus}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%">职业</div>
+                    <select name="customerOccupation" class="form-control"
+                            th:with="type=${@dict.getType('customer_occupation')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{customerOccupation}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%">渠道</div>
+                    <select name="channel" class="form-control"
+                            th:with="type=${@dict.getType('customer_salary')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{customerSalary}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%">薪资</div>
+                    <select name="customerSalary" class="form-control"
+                            th:with="type=${@dict.getType('customer_salary')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{customerSalary}"></option>
+                    </select>
+                </div>
+                <div style="margin-top: 10px">
+                    <div class="input-group col-xs-2">
+                        <div class="input-group-addon" style="background-color: #efefef;width: 50%">通话状态</div>
+                        <select name="phoneStatus" class="form-control"
+                                th:with="type=${@dict.getType('phone_status')}">
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{phoneStatus}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="margin-left: 20px">
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasHouse}" id="hasHouse" th:attr ="checked=*{hasHouse}==1?true:false">房</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasCar}" id="hasCar" th:attr ="checked=*{hasCar}==1?true:false">车</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasSocial}" id="hasSocial" th:attr ="checked=*{hasSocial}==1?true:false">社保</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasWarranty}" id="hasWarranty" th:attr ="checked=*{hasWarranty}==1?true:false">保单</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasCreditCard}" id="hasCreditCard" th:attr ="checked=*{hasCreditCard}==1?true:false">信用卡</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasAccumulation}" id="hasAccumulation" th:attr ="checked=*{hasAccumulation}==1?true:false">公积金</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{hasWeilidai}" id="hasWeilidai" th:attr ="checked=*{hasWeilidai}==1?true:false">微粒贷</label>
+                            <label class="checkbox-inline check-box"><input type="checkbox" th:value="*{isOverdue}" id="isOverdue" th:attr ="checked=*{isOverdue}==1?true:false">逾期</label>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 10px;width: 100%">
+                    <label for="exampleInputName2">备注：</label>
+                    <textarea class="form-control" rows="2" name="remark"></textarea>
+                </div>
+                <div class="row" style="margin-top: 10px;">
+                    <div class="col-sm-offset-5 col-sm-10">
+                        <button type="button" class="btn btn-md btn-primary" onclick="submitHandler()"><i class="fa fa-check"></i>保 存</button>&nbsp;
+                        <button type="button" class="btn btn-md btn-danger" onclick="closeItem()"><i class="fa fa-reply-all"></i>关 闭 </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="search-collapse">
+            <h4 class="form-header h4" style="font-weight: bold">备注：</h4>
+            <div th:each="ymswRemark:${ymswRemarks}" style="margin: 10px">
+                <span class="glyphicon glyphicon-edit" style="color: rgb(26,179,148)" aria-hidden="true"></span>&nbsp;
+                <span style="color: rgb(237,85,101);font-weight: bold" th:text="${ymswRemark.userName}"></span>&nbsp;&nbsp;提交于&nbsp;&nbsp;
+                <span th:text="${#dates.format(ymswRemark.remarkTime, 'yyyy-MM-dd HH:mm:ss')}"></span>&nbsp;&nbsp;
+                <span th:text="${ymswRemark.remarkContent}"></span>
+            </div>
+        </div>
+        <div class="search-collapse" shiro:hasPermission="customer:main:chargeRemark" id="chargeRemark">
+            <div style="margin: 10px;">
+                <label for="exampleInputName2">主管点评：</label>
+                <textarea class="form-control" rows="2" id="chargeRemark2"></textarea>
+            </div>
+            <div class="row" style="margin-top: 10px;">
+                <div class="col-sm-offset-5 col-sm-10">
+                    <button type="button" class="btn btn-md btn-primary" onclick="submitRemark()"><i class="fa fa-check"></i>点 评</button>&nbsp;
+                </div>
+            </div>
+        </div>
+        <div class="search-collapse">
+            <h4 class="form-header h4" style="font-weight: bold">主管点评：</h4>
+            <div th:each="ymswRemark:${remarkList}" style="margin: 10px">
+                <span class="glyphicon glyphicon-edit" style="color: rgb(26,179,148)" aria-hidden="true"></span>&nbsp;
+                <span style="color: rgb(237,85,101);font-weight: bold" th:text="${ymswRemark.userName}"></span>&nbsp;&nbsp;点评于&nbsp;&nbsp;
+                <span th:text="${#dates.format(ymswRemark.remarkTime, 'yyyy-MM-dd HH:mm:ss')}"></span>&nbsp;&nbsp;
+                <span th:text="${ymswRemark.remarkContent}"></span>
+            </div>
+        </div>
+    </div>
+
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: datetimepicker-js"/>
+<th:block th:include="include :: select2-js" />
+<script type="text/javascript">
+    // 当客户对应的业务经理是当前登录人时隐藏主管点评。即自己不能点评自己，只有上级点评下级。
+    var userId = [[${@permission.getPrincipalProperty('userId')}]]; //当前登陆用户id
+    var id = [[${ymswCustomer.userId}]];    //客户对应的业务经理id
+    if (userId == id){  //当登陆用户id等于业务经理id时，隐藏主管点评。
+        $("#chargeRemark").hide();
+    }
+
+    var prefix = ctx + "customer/main";
+    $("#form-main-edit").validate({
+        focusCleanup: true
+    });
+
+    //修改客户信息后保存
+    function submitHandler() {
+        if ($.validate.form()) {
+            var data = $("#form-main-edit").serializeArray();
+            var hasHouse = $("input[id='hasHouse']").is(':checked') == true ? 1 : 0;
+            var hasCar = $("input[id='hasCar']").is(':checked') == true ? 1 : 0;
+            var hasSocial = $("input[id='hasSocial']").is(':checked') == true ? 1 : 0;
+            var hasWarranty = $("input[id='hasWarranty']").is(':checked') == true ? 1 : 0;
+            var hasCreditCard = $("input[id='hasCreditCard']").is(':checked') == true ? 1 : 0;
+            var hasAccumulation = $("input[id='hasAccumulation']").is(':checked') == true ? 1 : 0;
+            var hasWeilidai = $("input[id='hasWeilidai']").is(':checked') == true ? 1 : 0;
+            var isOverdue = $("input[id='isOverdue']").is(':checked') == true ? 1 : 0;
+            data.push({"name": "hasHouse", "value": hasHouse});
+            data.push({"name": "hasCar", "value": hasCar});
+            data.push({"name": "hasSocial", "value": hasSocial});
+            data.push({"name": "hasWarranty", "value": hasWarranty});
+            data.push({"name": "hasCreditCard", "value": hasCreditCard});
+            data.push({"name": "hasAccumulation", "value": hasAccumulation});
+            data.push({"name": "hasWeilidai", "value": hasWeilidai});
+            data.push({"name": "isOverdue", "value": isOverdue});
+            // $.operate.saveTab(prefix + "/edit", data);
+            $.operate.ajax(prefix + "/edit","post","json",data);
+        }
+    }
+
+    //保存点评
+    function submitRemark() {
+        var remarkContent = $("#chargeRemark2").val();
+        var customerId = $("#customerId").val();
+        console.log(remarkContent)
+        if ($.common.isNotEmpty(remarkContent)) {
+            var data={"remarkContent":remarkContent,"customerId":customerId};
+            $.operate.ajax(ctx + "customer/remark/add","post","json",data);
+        }else {
+            $.modal.msgWarning("请填写点评！");
+        }
+    }
+</script>
+</body>
+</html>

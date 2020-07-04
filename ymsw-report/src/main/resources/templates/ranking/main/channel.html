@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<th:block th:include="include :: header('百度ECharts')" />
+    <th:block th:include="include :: select2-css" />
+    <th:block th:include="include :: datetimepicker-css" />
+    <style>
+        #echarts-pie-chart{width:100%;height:500px;}
+        .btn-primary.active{background-color: rgb(32,76,115);border-color: rgb(32,76,115);}
+    </style>
+</head>
+<body class="gray-bg">
+    <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse" style="padding-left: 30px">
+                <form id="formId" class="form-inline">
+                    <div class="row">
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon " style="background-color: #efefef;width: 50%">所属组织</div>
+                            <select name="params[deptId]" class="form-control">
+                                <option value="">-不限-</option>
+                                <option th:each="sysDept,sysDepts:${sysDepts}" th:value="${sysDept.deptId}" th:text="${sysDept.deptName}"></option>
+                            </select>
+                        </div>
+                        <!--<div class="input-group control-label">
+                            <div class="radio check-box">
+                                <label><input type="radio" value="option1" name="a"> <i></i> 当年</label>
+                            </div>
+                            <div class="radio check-box">
+                                <label><input type="radio" checked="" value="option2" name="a"> <i></i> 当季</label>
+                            </div>
+                            <div class="radio check-box">
+                                <label><input type="radio" checked="" value="option2" name="a"> <i></i> 当月</label>
+                            </div>
+                            <div class="radio check-box">
+                                <label><input type="radio" checked="" value="option2" name="a"> <i></i> 上月</label>
+                            </div>
+                            <div class="radio check-box">
+                                <label><input type="radio" checked="" value="option2" name="a"> <i></i> 自定义</label>
+                            </div>
+                        </div>-->
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">开始时间</div>
+                            <input type="text" class="time-input form-control" id="startTime" name="params[beginTime]"/>
+                        </div>
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">结束时间</div>
+                            <input type="text" class="time-input form-control" id="endTime" name="params[endTime]"/>
+                        </div>
+                        <!--<div class="input-group date">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            <input type="text" class="form-control" id="laydate-demo-4" placeholder="yyyy-MM-dd - yyyy-MM-dd">
+                        </div>-->
+                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded btn-md" onclick="searchPie()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <form id="formId2">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active" value="allowAmount">
+                        <input type="radio" name="type" id="option1" autocomplete="off" checked > 批款金额
+                    </label>
+                    <label class="btn btn-primary" value="incomeGeneration">
+                        <input type="radio" name="type" id="option2" autocomplete="off"> 创收金额
+                    </label>
+                    <label class="btn btn-primary" value="allowCount">
+                        <input type="radio" name="type" id="option3" autocomplete="off"> 批款件数
+                    </label>
+                    <label class="btn btn-primary" value="generationCount">
+                        <input type="radio" name="type" id="option4" autocomplete="off"> 创收件数
+                    </label>
+                </div>
+                </form>
+                <div class="wrapper wrapper-content animated fadeInRight">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-content">
+                                    <div class="echarts" id="echarts-pie-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: echarts-js" />
+    <th:block th:include="include :: select2-js" />
+    <th:block th:include="include :: datetimepicker-js" />
+    <script type="text/javascript">
+        var text;
+        var subtext;
+        var xdata = [];
+        var ajaxdata;
+
+	    //生成饼图
+	    function initPie() {
+            var pieChart = echarts.init(document.getElementById("echarts-pie-chart"));
+            var pieoption = {
+                title : {
+                    text: text,
+                    subtext: subtext,
+                    x:'center'
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+                legend: {
+                    orient : 'vertical',
+                    x : 'left',
+                    data: xdata
+                },
+                calculable : true,
+                series : [
+                    {
+                        name:'进件银行',
+                        type:'pie',
+                        radius : '60%',
+                        center: ['50%', '60%'],
+                        data: ajaxdata
+                    }
+                ]
+            };
+            pieChart.setOption(pieoption);
+            $(window).resize(pieChart.resize);
+        }
+
+        var type = $("#formId2 label.active").attr("value");
+
+        //发送ajax请求数据
+        function searchPie() {
+            var data = $.common.formToJSON("formId");
+            data.type = type;
+            $.ajax({
+                type: "post",
+                url: ctx + "ranking/main/channel/list",
+                data: data,
+                dataType:"json",
+                success: function(result){
+                    text = result.data.text;
+                    subtext = result.data.subtext;
+                    ajaxdata = result.data.ajaxdata;
+                    for (i=0;i<ajaxdata.length;i++){
+                        xdata.push(ajaxdata[i].name)
+                    }
+                    if (ajaxdata.length == 0){
+                        text = "暂无数据";
+                    }
+                    initPie();
+                }
+            });
+        }
+
+        //页面加载完成后执行搜索，生成饼图
+        $(function () {
+            searchPie();
+        });
+
+        //点击“批款金额”、“创收金额”、“批款件数”、“创收件数”时修改type的值，并发送ajax请求
+	    $("#formId2 label").click(function () {
+            type = $(this).attr("value");
+            searchPie();
+        })
+    </script>
+
+
+   <!-- <script type="text/javascript">
+        $(function(){
+            &lt;!&ndash; laydate示例 &ndash;&gt;
+            layui.use('laydate', function(){
+                var laydate = layui.laydate;
+                laydate.render({
+                    elem: '#laydate-demo-4',
+                    range: true
+                });
+
+                var startDate = laydate.render({
+                    elem: '#laydate-startTime',
+                    max: $('#laydate-endTime').val(),
+                    theme: 'molv',
+                    trigger: 'click',
+                    done: function(value, date) {
+                        // 结束时间大于开始时间
+                        if (value !== '') {
+                            endDate.config.min.year = date.year;
+                            endDate.config.min.month = date.month - 1;
+                            endDate.config.min.date = date.date;
+                        } else {
+                            endDate.config.min.year = '';
+                            endDate.config.min.month = '';
+                            endDate.config.min.date = '';
+                        }
+                    }
+                });
+
+                var endDate = laydate.render({
+                    elem: '#laydate-endTime',
+                    min: $('#laydate-startTime').val(),
+                    theme: 'molv',
+                    trigger: 'click',
+                    done: function(value, date) {
+                        // 开始时间小于结束时间
+                        if (value !== '') {
+                            startDate.config.max.year = date.year;
+                            startDate.config.max.month = date.month - 1;
+                            startDate.config.max.date = date.date;
+                        } else {
+                            startDate.config.max.year = '';
+                            startDate.config.max.month = '';
+                            startDate.config.max.date = '';
+                        }
+                    }
+                });
+            });
+        });
+    </script>-->
+</body>
+</html>

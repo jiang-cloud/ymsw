@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <title>贷款客户管理系统首页</title>
+    <!--[if lt IE 9]>
+    <meta http-equiv="refresh" content="0;ie.html"/>
+    <![endif]-->
+    <link th:href="@{favicon.ico}" rel="stylesheet"/>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/jquery.contextMenu.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/animate.css}" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <link th:href="@{/css/skins.css}" rel="stylesheet"/>
+    <link th:href="@{/ymsw/css/ry-ui.css?v=4.0.0}" rel="stylesheet"/>
+    <style>
+        .switchstatus{display: inline-block;vertical-align: middle}
+        .margintop{margin-top: 40px}
+    </style>
+</head>
+<body class="fixed-sidebar full-height-layout gray-bg" style="overflow: hidden;font-size: 15px" th:classappend="|${@config.getKey('sys.index.sideTheme')} ${@config.getKey('sys.index.skinName')}|">
+<div id="wrapper">
+
+    <!--左侧导航开始-->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav" id="side-menu">
+                <li class="text-center" style="height: 80px;color: rgb(237,85,101);border-bottom: rgb(237,85,101) 2px solid;padding-top: 3px" th:switch="${@permission.getPrincipalProperty('userFlag')}">
+                    <div th:case="1"><span style="font-size: 35px;font-weight: bold">英 茂 商 务</span><span>YINGMAO BUSINESS</span></div>
+                    <div th:case="2"><span style="font-size: 35px;font-weight: bold">振 为 商 务</span><span>ZHENWEI BUSINESS</span></div>
+            	</li>
+            	<li>
+            		<div class="user-panel text-center">
+				          <h4>[[${user.userName}]]&nbsp;<a th:href="@{logout}" style="padding-left:5px;"><i class="fa fa-sign-out text-danger"></i> 退出登录</a></h4>
+				    </div>
+            	</li>
+                <li th:each="menu : ${menus}">
+                	<a th:class="@{${menu.url != '' && menu.url != '#'} ? ${menu.target}}" th:href="@{${menu.url == ''} ? |#| : ${menu.url}}">
+                		<i class="fa fa-bar-chart-o" th:class="${menu.icon}"></i>
+                    	<span class="nav-label" th:text="${menu.menuName}">一级菜单</span> 
+                    	<span th:class="${menu.url == '' || menu.url == '#'} ? |fa arrow|"></span>
+                	</a>
+                    <ul class="nav nav-second-level collapse">
+						<li th:each="cmenu : ${menu.children}">
+							<a th:if="${#lists.isEmpty(cmenu.children)}" th:class="${cmenu.target == ''} ? |menuItem| : ${cmenu.target}" th:utext="${cmenu.menuName}" th:href="@{${cmenu.url}}">二级菜单</a>
+							<a th:if="${not #lists.isEmpty(cmenu.children)}" href="#">[[${cmenu.menuName}]]<span class="fa arrow"></span></a>
+							<ul th:if="${not #lists.isEmpty(cmenu.children)}" class="nav nav-third-level">
+								<li th:each="emenu : ${cmenu.children}"><a th:class="${emenu.target == ''} ? |menuItem| : ${emenu.target}" th:text="${emenu.menuName}" th:href="@{${emenu.url}}">三级菜单</a></li>
+							</ul>
+						</li>
+					</ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!--左侧导航结束-->
+    
+    <!--右侧部分开始-->
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <div class="row border-bottom" style="">
+            <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0;height: 80px;background-color: rgb(249,250,252);border-bottom: rgb(237,85,101) 2px solid">
+                <div class="row" style="margin-left: 10px">
+                    <div class="col-md-2">
+                        <p style="font-weight: bold;font-size: 24px;color: rgb(237,85,101);margin-top: 10px">客户管理系统</p>
+                        <p style="margin-top: -4px;font-size: 14px;font-weight: bold"><a th:title="英茂商务" href="http://www.yingmaosw.cn/" target="_blank">武汉市英茂商务咨询有限公司</a></p>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="margin-top: 40px;height: 34px;line-height: 34px;background-image: linear-gradient(to right,rgb(249,250,252),rgb(237,85,101),rgb(249,250,252))">
+                            <marquee style="color: yellow">
+                                <span class="glyphicon glyphicon-bullhorn" style="margin-right: 10px"></span>
+                                5月奖励政策宣贯：A、信贷--成功放开30万加（含）每单奖励100元；B、抵押和企业贷--放款30万到100万，每单奖励188元；放款100万到200万奖励300元；放款200万以上奖励888元。
+                            </marquee>
+                        </div>
+                    </div>
+                    <div class="col-md-1 text-center" shiro:hasPermission="data:main:edit">
+                        <p class="margintop" id="dataStatus">
+                        </p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <button type="button" class="btn btn-danger margintop">优秀榜单</button>
+                        <button type="button" class="btn btn-success margintop">公告 <span class="badge">14</span></button>
+<!--                        <button type="button" class="btn btn-danger" style="margin-top: 40px">优秀榜单</button>-->
+                        <button type="button" class="btn btn-danger margintop">优秀榜单</button>
+                    </div>
+
+                </div>
+            </nav>
+        </div>
+        <div class="row content-tabs">
+            <button class="roll-nav roll-left tabLeft">
+                <i class="fa fa-backward"></i>
+            </button>
+            <nav class="page-tabs menuTabs">
+                <div class="page-tabs-content">
+                    <a href="javascript:;" class="active menuTab" data-id="/system/main">首页</a>
+                </div>
+            </nav>
+            <button class="roll-nav roll-right tabRight">
+                <i class="fa fa-forward"></i>
+            </button>
+            <a href="#" class="roll-nav roll-right tabReload"><i class="fa fa-refresh"></i> 刷新</a>
+        </div>
+        <div class="row mainContent" id="content-main">
+            <iframe class="ymsw_iframe" name="iframe0" width="100%" height="100%" data-id="/system/main"
+                    th:src="@{/system/main}" frameborder="0" seamless></iframe>
+        </div>
+        <!--<div class="footer">
+            <div class="text-center">© [[${copyrightYear}]] 武汉市英茂商务咨询有限公司 Copyright
+        </div>-->
+    </div>
+    <!--右侧部分结束-->
+</div>
+<!-- 全局js -->
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/plugins/metisMenu/jquery.metisMenu.js}"></script>
+<script th:src="@{/js/plugins/slimscroll/jquery.slimscroll.min.js}"></script>
+<script th:src="@{/js/jquery.contextMenu.min.js}"></script>
+<script th:src="@{/ajax/libs/blockUI/jquery.blockUI.js}"></script>
+<script th:src="@{/ajax/libs/layer/layer.min.js}"></script>
+<script th:src="@{/ymsw/js/ry-ui.js?v=4.0.0}"></script>
+<script th:src="@{/ymsw/index.js}"></script>
+<script th:src="@{/ajax/libs/fullscreen/jquery.fullscreen.js}"></script>
+<script th:inline="javascript"> 
+var ctx = [[@{/}]];
+
+    //当有数据开关权限时发送ajax请求查询开关状态，回显数据开关状态
+    $(function () {
+        var editFlag = [[${@permission.hasPermi('data:main:edit')}]];
+        if (editFlag != "hidden") {
+            $.ajax({
+                type: "post",
+                url: ctx + "system/dict/data/selectDataStatus",
+                dataType:"json",
+                success: function(result){
+                    var value = result.data.dictValue;
+                    if (value == 1){
+                        $("#dataStatus").html("<i class='fa fa-toggle-on text-info fa-2x switchstatus' onclick='changeDataStatus(0)'></i> 数据开关")
+                    }else if (value == 0){
+                        $("#dataStatus").html("<i class='fa fa-toggle-off text-info fa-2x switchstatus' onclick='changeDataStatus(1)'></i> 数据开关")
+                    }
+                }
+            });
+        }
+    })
+
+    //修改数据开关状态
+    function changeDataStatus(value){
+        if (value == 1){
+            $.modal.confirm("确定要开启数据吗？",function () {
+                $.ajax({
+                    type: "post",
+                    url: ctx + "system/dict/data/saveDataStatus",
+                    data: {"dictValue":value},
+                    dataType:"json",
+                    success: function(result){
+                        if (result.code == 0){
+                            $.modal.msgSuccess(result.msg);
+                            $("#dataStatus").html("<i class='fa fa-toggle-on text-info fa-2x switchstatus' onclick='changeDataStatus(0)'></i> 数据开关")
+                        }
+                    }
+                });
+            })
+        }else if (value == 0) {
+            $.modal.confirm("确定要关闭数据吗？",function () {
+                $.ajax({
+                    type: "post",
+                    url: ctx + "system/dict/data/saveDataStatus",
+                    data: {"dictValue":value},
+                    dataType:"json",
+                    success: function(result){
+                        if (result.code == 0){
+                            $.modal.msgSuccess(result.msg);
+                            $("#dataStatus").html("<i class='fa fa-toggle-off text-info fa-2x switchstatus' onclick='changeDataStatus(1)'></i> 数据开关")
+                        }
+                    }
+                });
+            })
+        }
+    }
+
+</script>
+</body>
+</html>

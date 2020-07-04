@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('新增客户信息表')" />
+    <th:block th:include="include :: datetimepicker-css" />
+    <th:block th:include="include :: select2-css" />
+    <style>
+        body{font-size: 15px}
+    </style>
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-main-add">
+            <div class="form-group">
+<!--                <input type="hidden" name="type"/>-->
+                <label class="col-sm-3 control-label"><span style="color: red; ">*</span>客户姓名：</label>
+                <div class="col-sm-8">
+                    <input name="customerName" class="form-control" type="text" maxlength="10" required>
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label"><span style="color: red; ">*</span>性别：</label>
+                <div class="col-sm-8">
+                    <select name="customerSex" class="form-control m-b" th:with="type=${@dict.getType('sys_user_sex')}" required>
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label"><span style="color: red; ">*</span>手机号：</label>
+                <div class="col-sm-8">
+                    <input name="customerPhone" class="form-control" type="text" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label"><span style="color: red; ">*</span>贷款额度(万)：</label>
+                <div class="col-sm-8">
+                    <input name="customerQuota" class="form-control" type="number" min="0" required max="9999">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">出生年份：</label>
+                <div class="col-sm-8">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                        <input name="customerBirth" class="form-control" placeholder="yyyy" type="number" value="1980" min="1900">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">职业：</label>
+                <div class="col-sm-8">
+                    <select name="customerOccupation" class="form-control m-b" th:with="type=${@dict.getType('customer_occupation')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">薪资方式：</label>
+                <div class="col-sm-8">
+                    <select name="customerSalary" class="form-control m-b" th:with="type=${@dict.getType('customer_salary')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label"></label>
+                <div class="col-sm-8">
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasHouse">房</label>
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasCar">车</label>
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasSocial">社保</label>
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasWarranty">保单</label>
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasCreditCard">信用卡</label>
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasAccumulation">公积金</label>
+                    <label class="checkbox-inline check-box"><input type="checkbox" value="1" name="hasWeilidai">微粒贷</label>
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: datetimepicker-js" />
+    <th:block th:include="include :: select2-js" />
+    <script type="text/javascript">
+        var prefix = ctx + "customer/main"
+        $("#form-main-add").validate({
+            focusCleanup: true,
+            onkeyup: false,
+            rules: {
+                customerPhone: {isPhone:true},
+                customerQuota: {digits:true},
+                customerName: {isName:true}
+            },
+            messages: {
+                customerQuota:{min:"不能小于0",max:"不能大于9999"}
+            },
+
+        });
+
+        function submitHandler() {
+            // var formData = $.param({'type': "platform"}) + '&'+$('#form-main-add').serialize();
+            var formData = $('#form-main-add').serialize();
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/add",formData);
+            }
+        }
+
+        $("input[name='customerBirth']").datetimepicker({
+            startView: 'decade',
+            minView: 'decade',
+            format: 'yyyy',
+            maxViewMode: 2,
+            minViewMode:2,
+            autoclose: true
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改业绩排行')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-main-edit" th:object="${ymswPerformanceRanking}">
+            <input name="rankingId" th:field="*{rankingId}" type="hidden">
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">业务员id：</label>
+                <div class="col-sm-8">
+                    <input name="userId" th:field="*{userId}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当月累计创收：</label>
+                <div class="col-sm-8">
+                    <input name="totalGeneration" th:field="*{totalGeneration}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当日创收：</label>
+                <div class="col-sm-8">
+                    <input name="todayGeneration" th:field="*{todayGeneration}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当月累计进件数：</label>
+                <div class="col-sm-8">
+                    <input name="totalIncomingCount" th:field="*{totalIncomingCount}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当日进件数：</label>
+                <div class="col-sm-8">
+                    <input name="todayIncomingCount" th:field="*{todayIncomingCount}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当月累计收款笔数：</label>
+                <div class="col-sm-8">
+                    <input name="totalCollectionCount" th:field="*{totalCollectionCount}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当日收款笔数：</label>
+                <div class="col-sm-8">
+                    <input name="todayCollectionCount" th:field="*{todayCollectionCount}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">当月累计批款总金额：</label>
+                <div class="col-sm-8">
+                    <input name="totalAllowAmount" th:field="*{totalAllowAmount}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">平均费率：</label>
+                <div class="col-sm-8">
+                    <input name="avgOrderRate" th:field="*{avgOrderRate}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">年月：</label>
+                <div class="col-sm-8">
+                    <input name="yearMonth" th:field="*{yearMonth}" class="form-control" type="text">
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script type="text/javascript">
+        var prefix = ctx + "ranking/main";
+        $("#form-main-edit").validate({
+            focusCleanup: true
+        });
+
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/edit", $('#form-main-edit').serialize());
+            }
+        }
+    </script>
+</body>
+</html>

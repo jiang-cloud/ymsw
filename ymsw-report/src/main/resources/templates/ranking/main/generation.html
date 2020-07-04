@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<th:block th:include="include :: header('百度ECharts')" />
+    <th:block th:include="include :: select2-css" />
+    <th:block th:include="include :: datetimepicker-css" />
+    <style>
+        #echarts-line-chart{width:100%;height:500px;}
+    </style>
+</head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 search-collapse" style="padding-left: 30px">
+            <form id="formId" class="form-inline">
+                <div class="row">
+                    <div class="input-group col-xs-2">
+                        <div class="input-group-addon " style="background-color: #efefef;width: 50%">所属组织</div>
+                        <select name="params[deptId]" class="form-control">
+                            <option value="">-不限-</option>
+                            <option th:each="sysDept,sysDepts:${sysDepts}" th:value="${sysDept.deptId}" th:text="${sysDept.deptName}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group col-xs-2">
+                        <div class="input-group-addon" style="background-color: #efefef;width: 50%">月份</div>
+                        <input type="text" class="form-control" id="dataYearMonth" name="params[dataYearMonth]" />
+                    </div>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-rounded btn-md" onclick="searchLine()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-12 select-table table-striped">
+            <div class="wrapper wrapper-content animated fadeInRight">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="ibox float-e-margins">
+                            <div class="ibox-content">
+                                <div class="echarts" id="echarts-line-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: echarts-js" />
+    <th:block th:include="include :: select2-js" />
+<th:block th:include="include :: datetimepicker-js" />
+    <script type="text/javascript">
+        $('#dataYearMonth').datetimepicker({
+            format: 'yyyy-mm',
+            weekStart: 1,
+            autoclose: true,
+            startView: 3,
+            minView: 3,
+            forceParse: false
+        });
+
+
+        var legenddata = ['当月累计创收(元)'];
+        var xaxisdata = [];
+        var seriesfirstdata = [];
+
+        function initLine(){
+            var lineChart = echarts.init(document.getElementById("echarts-line-chart"));
+            var lineoption = {
+                title : {
+                    text: '月创收增长趋势图',
+                    x: 'center'
+                },
+                tooltip : {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: legenddata,
+                    y: 'bottom'
+                },
+                grid:{
+                    x:40,
+                    x2:40,
+                    y2:24,
+                    bottom: '13%',
+                    left: '6%',
+                },
+                calculable : true,
+                xAxis : [
+                    {
+                        type : 'category',
+                        boundaryGap : false,
+                        data : xaxisdata
+                    }
+                ],
+                yAxis : [
+                    {
+                        type : 'value',
+                        axisLabel : {
+                            formatter: '{value} 元'
+                        }
+                    }
+                ],
+                series : [
+                    {
+                        name:'当月累计创收(元)',
+                        type:'line',
+                        data: seriesfirstdata
+                    }
+                ]
+            };
+            lineChart.setOption(lineoption);
+            $(window).resize(lineChart.resize);
+        }
+
+        //发送ajax请求数据
+        function searchLine() {
+            var data = $.common.formToJSON("formId");
+            $.ajax({
+                type: "post",
+                url: ctx + "ranking/main/generation/list",
+                data: data,
+                dataType:"json",
+                success: function(result){
+                    xaxisdata = result.data.xaxisdata;
+                    seriesfirstdata = result.data.seriesfirstdata;
+                    initLine();//初始化折线图
+                }
+            });
+        }
+
+        //页面加载完成后发送ajax请求
+	    $(function () {
+            searchLine();
+	    });
+    </script>
+</body>
+</html>

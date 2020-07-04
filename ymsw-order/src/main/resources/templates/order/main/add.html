@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('新增订单信息表')"/>
+    <th:block th:include="include :: bootstrap-fileinput-css"/>
+    <th:block th:include="include :: select2-css" />
+    <style>
+        body{font-size: 15px}
+    </style>
+</head>
+<body class="white-bg">
+<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-main-add">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>客户搜索</label>
+                    <div class="col-sm-6">
+                        <input id="customerPhone" onblur="getCustomerInfo()" class="form-control"
+                               type="text"
+                               placeholder="手机号">
+                        <input name="customerId" type="text" hidden>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>客户姓名</label>
+                    <div class="col-sm-6">
+                        <input id="customerName" class="form-control" type="text" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>客户手机号</label>
+                    <div class="col-sm-6">
+                        <input id="phone" class="form-control" type="text" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>客户经理</label>
+                    <div class="col-sm-6">
+                        <input id="userName" class="form-control" type="text" readonly>
+                        <input name="userId" type="text" hidden>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">部门</label>
+                    <div class="col-sm-6">
+                        <input id="deptName" class="form-control" type="text" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>合同号</label>
+                    <div class="col-sm-6">
+                        <input name="contractId" class="form-control" type="number" required>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>点数</label>
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <input name="orderRate" type="number" class="form-control" required min="0">
+                            <div class="input-group-addon" style="font-size: 15px">%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>诚意金</label>
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <input name="sincerityMoney" class="form-control" type="number" required min="0">
+                            <div class="input-group-addon" style="font-size: 15px">元</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"><span style="color: red">*&nbsp;</span>诚意金收款方式</label>
+                    <div class="col-sm-6">
+                        <select name="sincerityPayMethod" class="form-control m-b"
+                                th:with="type=${@dict.getType('sincerity_pay_method')}" required>
+                            <option value="">-请选择-</option>
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}"
+                                    th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">订单备注</label>
+                    <div class="col-sm-6">
+                        <textarea name="orderRemark" class="form-control"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--合同图片-->
+        <input type="text" id="urlLink" value="" name="contractPath" hidden>
+    </form>
+    <div class="row" style="margin-left: -285px">
+        <div class="col-sm-3" style="text-align: right">添加合同</div>
+        <div class="col-sm-7">
+            <div class="file-loading">
+                <input id="uploadfile" type="file" multiple name="uploadFiles">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="text-center">
+            <button type="button" class="btn btn-md btn-primary" onclick="submitHandler()"><i class="fa fa-check"></i>保 存</button>&nbsp;
+            <button type="button" class="btn btn-md btn-danger" onclick="closeItem()"><i class="fa fa-reply-all"></i>关 闭 </button>
+        </div>
+    </div>
+</div>
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: bootstrap-fileinput-js"/>
+<th:block th:include="include :: select2-js" />
+<script type="text/javascript">
+    var prefix = ctx + "order/main"
+    $("#form-main-add").validate({
+        onkeyup: false,
+        rules: {
+            contractId:{min:0,max:9999999},
+            orderRate: {min:0,max:999},
+            sincerityMoney: {min:0,max:500000,digits:true}
+        },
+        messages: {
+            contractId:{min:"不能小于0",max:"不能大于9999999"},
+            orderRate:{min:"不能小于0",max:"不能大于999"},
+            sincerityMoney:{min:"不能小于0",max:"不能大于500000",digits:"请输入整数"}
+        },
+        focusCleanup: true
+    });
+
+    //保存签约进件
+    function submitHandler() {
+        var customerId = $("input[name='customerId']").val();
+        var userId = $("input[name='userId']").val();
+        if ($.validate.form() && customerId != '' && userId != '') {
+            $.operate.saveTab(prefix + "/add", $('#form-main-add').serialize());
+        }else if (customerId == '') {
+            $.modal.msgError("请输入正确的手机号");
+        }else if (userId == '') {
+            $.modal.msgError("客户经理不存在");
+        }
+    }
+
+    /*失去焦点后查询客户信息*/
+    function getCustomerInfo() {
+        var phone = $("#customerPhone").val();
+        var url = ctx + "customer/main/getCustomerInfo/" + phone;
+        var myreg = /^[1][3,4,5,7,8,9][0-9]{9}$/;
+        if (!myreg.test(phone)) {
+            $.modal.msgError("请输入正确的手机号码！");
+            clearData();
+        } else {
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json",
+                success: function (result) {
+                    if (result.code == 0) {
+                        $("input[name='customerId']").val(result.data.customerId);
+                        $("input[name='userId']").val(result.data.userId);
+                        $("#customerName").val(result.data.customerName);
+                        $("#phone").val(result.data.customerPhone);
+                        $("#userName").val(result.data.userName);
+                        $("#deptName").val(result.data.deptName);
+                    } else {
+                        $.modal.msgError(result.msg);
+                        clearData();
+                    }
+                },
+                error: function (result) {
+                    $.modal.msgError(result.msg);
+                    clearData();
+                }
+            });
+        }
+    }
+
+    //清除input里的数据
+    function clearData(){
+        $("#customerName").val("");
+        $("#phone").val("");
+        $("#userName").val("");
+        $("#deptName").val("");
+        $("input[name='customerId']").val("");
+        $("input[name='userId']").val("");
+    }
+
+    //导入文件上传完成之后的事件
+    $("#uploadfile").on("fileuploaded", function (event, data, previewId, index) {
+        var response = data.response;
+        var imgPath = $("#urlLink").val();
+        if(imgPath!=null && imgPath !=''){
+            $("#urlLink").val(imgPath+"|"+response.fileName);
+        }else{
+            $("#urlLink").val(response.fileName);
+        }
+        $("#uploadfile").fileinput('destroy');//销毁fileUploadFileInput
+        initUpload();//重新初始化文件预览数据和文件上传附件
+        $("#uploadfile").fileinput('enable');//使能按钮
+    });
+
+    //初始化文件预览数据和文件上传附件
+    initUpload();
+
+    function initUpload() {
+        var logoUrl = $("#urlLink").val();//拿到图片路径
+        var preList = new Array();
+        var initialPreviewConfig = new Array();
+        //设置初始化区域值
+        if (logoUrl!=null && logoUrl != ''){
+            var imgArr = logoUrl.split("|");
+            for ( var i = 0; i < imgArr.length; i++) {
+                preList[i] = imgArr[i];
+                var a = {
+                    width: '120px',
+                    url: ctx + 'common/delFile',
+                    key: i,
+                    extra: {url: imgArr[i]}
+                }
+                initialPreviewConfig.push(a);
+            }
+        }
+        $("#uploadfile").fileinput({
+            uploadUrl: ctx + "common/uploadFiles", //上传的地址，改成自己的
+            allowedFileExtensions: ['jpg', 'gpeg', 'png'],//接收的文件后缀
+            initialPreviewAsData:true,
+            initialPreview:preList,//预览图片
+            uploadAsync: true, //默认异步上传
+            showUpload: true, //是否显示上传按钮
+            showRemove : false, //显示移除按钮
+            showPreview : true, //是否显示预览
+            showCaption: false,//是否显示标题
+            browseClass: "btn btn-warning", //按钮样式
+            dropZoneEnabled: false,//是否显示拖拽区域
+            maxFileCount: 10, //表示允许同时上传的最大文件个数
+            maxFileSize:10 *1024 *1024,
+            enctype: 'multipart/form-data',
+            validateInitialCount:true,
+            autoReplace:false,
+            layoutTemplates:{actionUpload:'',actionDrag: '<span class="file-drag-handle"><i class="glyphicon glyphicon-ok" style="color: green"></i></span>'},//去掉预览图上的上传图标
+            initialPreviewConfig:initialPreviewConfig,
+            uploadExtraData: function (previewId, index) {   //传参
+                var data = {"inputName": "uploadFiles"};    //此处自定义传参
+                return data;
+            }
+        });
+    }
+
+    /* 删除图片 */
+    $('#uploadfile').on('filepredelete', function(event, key, jqXHR, data) {  //就是在删除原图片之前触发，而新选择的图片不会触发。
+        var filename = data.url;
+        var logoUrl = $("#urlLink").val();
+        var urlLinkNew = '';
+        var imgArr = logoUrl.split("|");
+        for ( var i = 0; i < imgArr.length; i++) {
+            if (imgArr[i] == filename){
+                continue;
+            } else {
+                if (urlLinkNew !=''){
+                    urlLinkNew = urlLinkNew + "|" + imgArr[i];
+                }else{
+                    urlLinkNew = imgArr[i];
+                }
+            }
+        }
+        $("#urlLink").val(urlLinkNew);
+    });
+
+
+</script>
+</body>
+</html>

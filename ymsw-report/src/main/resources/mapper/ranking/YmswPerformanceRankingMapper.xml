@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ymsw.ranking.mapper.YmswPerformanceRankingMapper">
+    
+    <resultMap type="YmswPerformanceRanking" id="YmswPerformanceRankingResult">
+        <result property="rankingId"    column="ranking_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="totalGeneration"    column="total_generation"    />
+        <result property="todayGeneration"    column="today_generation"    />
+        <result property="totalIncomingCount"    column="total_incoming_count"    />
+        <result property="todayIncomingCount"    column="today_incoming_count"    />
+        <result property="totalCollectionCount"    column="total_collection_count"    />
+        <result property="todayCollectionCount"    column="today_collection_count"    />
+        <result property="totalAllowAmount"    column="total_allow_amount"    />
+        <result property="avgOrderRate"    column="avg_order_rate"    />
+        <result property="dataYearMonth"    column="data_year_month"    />
+        <result property="userName"    column="user_name"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="deptId"    column="dept_id"    />
+    </resultMap>
+
+    <sql id="selectYmswPerformanceRankingVo">
+        select u.user_name,d.dept_name, ranking_id, u.user_id, total_generation, today_generation, total_incoming_count, today_incoming_count, total_collection_count, today_collection_count, total_allow_amount, avg_order_rate, data_year_month
+        from ymsw_performance_ranking ypr
+        left join sys_user u on u.user_id = ypr.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+    </sql>
+
+    <select id="selectYmswPerformanceRankingList" parameterType="YmswPerformanceRanking" resultMap="YmswPerformanceRankingResult">
+        <include refid="selectYmswPerformanceRankingVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="totalGeneration != null "> and total_generation = #{totalGeneration}</if>
+            <if test="todayGeneration != null "> and today_generation = #{todayGeneration}</if>
+            <if test="totalIncomingCount != null "> and total_incoming_count = #{totalIncomingCount}</if>
+            <if test="todayIncomingCount != null "> and today_incoming_count = #{todayIncomingCount}</if>
+            <if test="totalCollectionCount != null "> and total_collection_count = #{totalCollectionCount}</if>
+            <if test="todayCollectionCount != null "> and today_collection_count = #{todayCollectionCount}</if>
+            <if test="totalAllowAmount != null "> and total_allow_amount = #{totalAllowAmount}</if>
+            <if test="avgOrderRate != null "> and avg_order_rate = #{avgOrderRate}</if>
+            <if test="dataYearMonth != null  and dataYearMonth != ''"> and data_year_month = #{dataYearMonth}</if>
+            <if test="params.userName != null  and params.userName != ''"> and u.user_name like concat('%', #{params.userName}, '%')</if>
+            <if test="params.deptId != null and params.deptId !=''">
+                and (u.dept_id = #{params.deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{params.deptId},ancestors) ))
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectYmswPerformanceRankingById" parameterType="Long" resultMap="YmswPerformanceRankingResult">
+        <include refid="selectYmswPerformanceRankingVo"/>
+        where ranking_id = #{rankingId}
+    </select>
+        
+    <insert id="insertYmswPerformanceRanking" parameterType="YmswPerformanceRanking" useGeneratedKeys="true" keyProperty="rankingId">
+        insert into ymsw_performance_ranking
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null ">user_id,</if>
+            <if test="totalGeneration != null ">total_generation,</if>
+            <if test="todayGeneration != null ">today_generation,</if>
+            <if test="totalIncomingCount != null ">total_incoming_count,</if>
+            <if test="todayIncomingCount != null ">today_incoming_count,</if>
+            <if test="totalCollectionCount != null ">total_collection_count,</if>
+            <if test="todayCollectionCount != null ">today_collection_count,</if>
+            <if test="totalAllowAmount != null ">total_allow_amount,</if>
+            <if test="avgOrderRate != null ">avg_order_rate,</if>
+            <if test="dataYearMonth != null  and dataYearMonth != ''">data_year_month,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null ">#{userId},</if>
+            <if test="totalGeneration != null ">#{totalGeneration},</if>
+            <if test="todayGeneration != null ">#{todayGeneration},</if>
+            <if test="totalIncomingCount != null ">#{totalIncomingCount},</if>
+            <if test="todayIncomingCount != null ">#{todayIncomingCount},</if>
+            <if test="totalCollectionCount != null ">#{totalCollectionCount},</if>
+            <if test="todayCollectionCount != null ">#{todayCollectionCount},</if>
+            <if test="totalAllowAmount != null ">#{totalAllowAmount},</if>
+            <if test="avgOrderRate != null ">#{avgOrderRate},</if>
+            <if test="dataYearMonth != null  and dataYearMonth != ''">#{dataYearMonth},</if>
+         </trim>
+    </insert>
+
+    <update id="updateYmswPerformanceRanking" parameterType="YmswPerformanceRanking">
+        update ymsw_performance_ranking
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null ">user_id = #{userId},</if>
+            <if test="totalGeneration != null ">total_generation = #{totalGeneration},</if>
+            <if test="todayGeneration != null ">today_generation = #{todayGeneration},</if>
+            <if test="totalIncomingCount != null ">total_incoming_count = #{totalIncomingCount},</if>
+            <if test="todayIncomingCount != null ">today_incoming_count = #{todayIncomingCount},</if>
+            <if test="totalCollectionCount != null ">total_collection_count = #{totalCollectionCount},</if>
+            <if test="todayCollectionCount != null ">today_collection_count = #{todayCollectionCount},</if>
+            <if test="totalAllowAmount != null ">total_allow_amount = #{totalAllowAmount},</if>
+            <if test="avgOrderRate != null ">avg_order_rate = #{avgOrderRate},</if>
+            <if test="dataYearMonth != null  and dataYearMonth != ''">data_year_month = #{dataYearMonth},</if>
+        </trim>
+        where ranking_id = #{rankingId}
+    </update>
+
+    <delete id="deleteYmswPerformanceRankingById" parameterType="Long">
+        delete from ymsw_performance_ranking where ranking_id = #{rankingId}
+    </delete>
+
+    <delete id="deleteYmswPerformanceRankingByIds" parameterType="String">
+        delete from ymsw_performance_ranking where ranking_id in 
+        <foreach item="rankingId" collection="array" open="(" separator="," close=")">
+            #{rankingId}
+        </foreach>
+    </delete>
+
+
+    <sql id="selectYmswPerformanceRankingListByMinisterVo">
+        select d.dept_id,data_year_month,d.dept_name,d.leader as user_name, sum(total_generation) as total_generation,sum(today_generation) as today_generation,sum(total_incoming_count) as total_incoming_count,
+            sum(today_incoming_count) as today_incoming_count,sum(total_collection_count) as total_collection_count,sum(today_collection_count) as today_collection_count,
+            sum(total_allow_amount) as total_allow_amount,ROUND(avg(avg_order_rate),2) as avg_order_rate
+        from ymsw_performance_ranking ypr
+        left join sys_user u on u.user_id = ypr.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+    </sql>
+
+    <!--业绩排行里，团队排名查询-->
+    <select id="selectYmswPerformanceRankingListByMinister" parameterType="YmswPerformanceRanking" resultMap="YmswPerformanceRankingResult">
+        <include refid="selectYmswPerformanceRankingListByMinisterVo"/>
+        <where>
+            <if test="dataYearMonth != null  and dataYearMonth != ''"> and data_year_month = #{dataYearMonth}</if>
+        </where>
+        GROUP BY d.dept_id
+    </select>
+
+    <sql id="selectYmswPerformanceRankingListByDistrictVo">
+        select d.parent_id as dept_id,data_year_month,aa.leader as user_name,aa.dept_name,sum(total_generation) as total_generation,sum(today_generation) as today_generation,sum(total_incoming_count) as total_incoming_count,
+            sum(today_incoming_count) as today_incoming_count,sum(total_collection_count) as total_collection_count,sum(today_collection_count) as today_collection_count,
+            sum(total_allow_amount) as total_allow_amount,ROUND(avg(avg_order_rate),2) as avg_order_rate
+        from ymsw_performance_ranking ypr
+        left join sys_user u on u.user_id = ypr.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+		left join (select sd.dept_name,sd.dept_id,sd.leader from sys_dept sd ) as aa on aa.dept_id = d.parent_id
+    </sql>
+
+    <!--业绩排行里，区部排名查询-->
+    <select id="selectYmswPerformanceRankingListByDistrict" parameterType="YmswPerformanceRanking" resultMap="YmswPerformanceRankingResult">
+        <include refid="selectYmswPerformanceRankingListByDistrictVo"/>
+        <where>
+            <if test="dataYearMonth != null  and dataYearMonth != ''"> and data_year_month = #{dataYearMonth}</if>
+        </where>
+        GROUP BY d.parent_id
+    </select>
+
+    <!--业绩排行里，门店排名查询-->
+    <select id="selectYmswPerformanceRankingListByPrincipal" parameterType="YmswPerformanceRanking" resultMap="YmswPerformanceRankingResult">
+        select bb.parent_id as dept_id,bb.data_year_month,sum(bb.total_generation) as total_generation,sum(bb.today_generation) as today_generation,sum(bb.total_incoming_count) as total_incoming_count,
+            sum(bb.today_incoming_count) as today_incoming_count,sum(bb.total_collection_count) as total_collection_count,sum(bb.today_collection_count) as today_collection_count,
+            sum(bb.total_allow_amount) as total_allow_amount,ROUND(avg(bb.avg_order_rate),2) as avg_order_rate,sysd.dept_name,sysd.leader as user_name
+        from (select aa.leader,aa.dept_name,data_year_month,aa.parent_id,sum(total_generation) as total_generation,sum(today_generation) as today_generation,sum(total_incoming_count) as total_incoming_count,
+            sum(today_incoming_count) as today_incoming_count,sum(total_collection_count) as total_collection_count,sum(today_collection_count) as today_collection_count,
+            sum(total_allow_amount) as total_allow_amount,ROUND(avg(avg_order_rate),2) as avg_order_rate
+            from ymsw_performance_ranking ypr
+            left join sys_user u on u.user_id = ypr.user_id
+            left join sys_dept d on d.dept_id = u.dept_id
+            left join (select sd.dept_name,sd.dept_id,sd.leader,sd.parent_id from sys_dept sd ) as aa on aa.dept_id = d.parent_id
+            where data_year_month = #{dataYearMonth}
+            GROUP BY d.parent_id ) as bb
+        left join sys_dept sysd on sysd.dept_id = bb.parent_id
+        GROUP BY bb.parent_id
+    </select>
+
+    <!--通过userId和dataYearMonth查询该业务经理该月份的统计信息-->
+    <select id="selectYmswPerformanceRanking" parameterType="YmswPerformanceRanking" resultMap="YmswPerformanceRankingResult">
+        select * from ymsw_performance_ranking where user_id = #{userId} and data_year_month = #{dataYearMonth}
+    </select>
+
+    <!--    统计月总进件笔数-->
+    <select id="selectTotalIncomingCount" resultMap="YmswPerformanceRankingResult">
+        SELECT user_id,count(1) as total_incoming_count
+        from ymsw_order
+        where date_format(incoming_time,'%y%m%d') >= date_format(#{firstDay},'%y%m%d')
+        and <![CDATA[ date_format(incoming_time,'%y%m%d') <= date_format(#{lastDay},'%y%m%d') ]]>
+        group by user_id;
+    </select>
+
+    <!--    统计月总收款笔数-->
+    <select id="selectTotalCollectionCount" resultMap="YmswPerformanceRankingResult">
+        SELECT user_id,count(1) as total_collection_count
+        from ymsw_order
+        where date_format(collection_time,'%y%m%d') >= date_format(#{firstDay},'%y%m%d')
+        and <![CDATA[ date_format(collection_time,'%y%m%d') <= date_format(#{lastDay},'%y%m%d') ]]>
+        group by user_id;
+    </select>
+
+    <!--    统计月批款总金额-->
+    <select id="selectTotalAllowAmount" resultMap="YmswPerformanceRankingResult">
+        SELECT user_id,sum(allow_amount) as total_allow_amount
+        from ymsw_order
+        where date_format(allow_time,'%y%m%d') >= date_format(#{firstDay},'%y%m%d')
+        and <![CDATA[ date_format(allow_time,'%y%m%d') <= date_format(#{lastDay},'%y%m%d') ]]>
+        group by user_id;
+    </select>
+
+    <!--    月总创收（参考收款时间）-->
+    <select id="selectTotalGeneration" resultMap="YmswPerformanceRankingResult">
+        SELECT user_id,sum(income_generation) as total_generation
+        from ymsw_order
+        where date_format(collection_time,'%y%m%d') >= date_format(#{firstDay},'%y%m%d')
+        and <![CDATA[ date_format(collection_time,'%y%m%d') <= date_format(#{lastDay},'%y%m%d') ]]>
+        group by user_id;
+    </select>
+
+    <!--    平均费率（参考收款时间）-->
+    <select id="selectOrderRate" resultMap="YmswPerformanceRankingResult">
+        SELECT user_id,round(avg(order_rate),2) as avg_order_rate
+        from ymsw_order
+        where date_format(collection_time,'%y%m%d') >= date_format(#{firstDay},'%y%m%d')
+        and <![CDATA[ date_format(collection_time,'%y%m%d') <= date_format(#{lastDay},'%y%m%d') ]]>
+        group by user_id;
+    </select>
+
+    <!--  进件银行占比页面的批款金额查询  -->
+    <select id="allowAmount" parameterType="BaseEntity" resultType="map">
+        select sdd.dict_label as name,ifnull(sum(yo.allow_amount),0) as value from ymsw_order yo
+        left join sys_dict_data sdd on sdd.dict_value = yo.incoming_channel
+        left join sys_user u on u.user_id = yo.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+        where sdd.dict_type = 'incoming_channel'
+        <if test="params.deptId != null and params.deptId != ''">
+            and (u.dept_id = #{params.deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{params.deptId},ancestors) ))
+        </if>
+        <if test="params.beginTime != null and params.beginTime != ''">
+            and date_format(yo.allow_time,'%y%m%d') >= date_format(#{params.beginTime},'%y%m%d')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            <![CDATA[ and date_format(yo.allow_time,'%y%m%d') <= date_format(#{params.endTime},'%y%m%d') ]]>
+        </if>
+        group by yo.incoming_channel
+    </select>
+
+    <!--  进件银行占比页面的创收金额查询  -->
+    <select id="incomeGeneration" parameterType="BaseEntity" resultType="map">
+        select sdd.dict_label as name,ifnull(sum(yo.income_generation),0) as value from ymsw_order yo
+        left join sys_dict_data sdd on sdd.dict_value = yo.incoming_channel
+        left join sys_user u on u.user_id = yo.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+        where sdd.dict_type = 'incoming_channel'
+        <if test="params.deptId != null and params.deptId != ''">
+            and (u.dept_id = #{params.deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{params.deptId},ancestors) ))
+        </if>
+        <if test="params.beginTime != null and params.beginTime != ''">
+            and date_format(yo.collection_time,'%y%m%d') >= date_format(#{params.beginTime},'%y%m%d')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            <![CDATA[ and date_format(yo.collection_time,'%y%m%d') <= date_format(#{params.endTime},'%y%m%d') ]]>
+        </if>
+        group by yo.incoming_channel
+    </select>
+
+    <!--  进件银行占比页面的批款件数查询  -->
+    <select id="allowCount" parameterType="BaseEntity" resultType="map">
+        select sdd.dict_label as name,count(1) as value from ymsw_order yo
+        left join sys_dict_data sdd on sdd.dict_value = yo.incoming_channel
+        left join sys_user u on u.user_id = yo.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+        where sdd.dict_type = 'incoming_channel'
+        <if test="params.deptId != null and params.deptId != ''">
+            and (u.dept_id = #{params.deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{params.deptId},ancestors) ))
+        </if>
+        <if test="params.beginTime != null and params.beginTime != ''">
+            and date_format(yo.allow_time,'%y%m%d') >= date_format(#{params.beginTime},'%y%m%d')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            <![CDATA[ and date_format(yo.allow_time,'%y%m%d') <= date_format(#{params.endTime},'%y%m%d') ]]>
+        </if>
+        group by yo.incoming_channel
+    </select>
+
+    <!--  进件银行占比页面的创收件数查询  -->
+    <select id="generationCount" parameterType="BaseEntity" resultType="map">
+        select sdd.dict_label as name,count(1) as value from ymsw_order yo
+        left join sys_dict_data sdd on sdd.dict_value = yo.incoming_channel
+        left join sys_user u on u.user_id = yo.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+        where sdd.dict_type = 'incoming_channel'
+        <if test="params.deptId != null and params.deptId != ''">
+            and (u.dept_id = #{params.deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{params.deptId},ancestors) ))
+        </if>
+        <if test="params.beginTime != null and params.beginTime != ''">
+            and date_format(yo.collection_time,'%y%m%d') >= date_format(#{params.beginTime},'%y%m%d')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            <![CDATA[ and date_format(yo.collection_time,'%y%m%d') <= date_format(#{params.endTime},'%y%m%d') ]]>
+        </if>
+        group by yo.incoming_channel
+    </select>
+
+    <!--  月创收增长页面里查询从某某天到某某天的累计创收  -->
+    <select id="totalGeneration" parameterType="BaseEntity" resultType="Double">
+        select ifnull(sum(yo.income_generation),0) from ymsw_order yo
+        left join sys_user u on u.user_id = yo.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+        <where>
+            date_format(yo.collection_time,'%y%m%d') >= date_format(#{params.beginTime},'%y%m%d')
+            <![CDATA[ and date_format(yo.collection_time,'%y%m%d') <= date_format(#{params.endTime},'%y%m%d') ]]>
+            <if test="params.deptId != null and params.deptId != ''">
+                and (u.dept_id = #{params.deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{params.deptId},ancestors) ))
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ymsw.quartz.mapper.TaskManageMapper">
+    
+    <resultMap type="TaskManage" id="TaskManageResult">
+        <result property="taskId"    column="task_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="taskTime"    column="task_time"    />
+        <result property="taskContent"    column="task_content"    />
+        <result property="taskStatus"    column="task_status"    />
+    </resultMap>
+
+    <sql id="selectTaskManageVo">
+        select task_id, user_id, task_time, task_content, task_status from task_manage
+    </sql>
+
+    <select id="selectTaskManageList" parameterType="TaskManage" resultMap="TaskManageResult">
+        <include refid="selectTaskManageVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="taskTime != null "> and task_time = #{taskTime}</if>
+            <if test="taskContent != null  and taskContent != ''"> and task_content = #{taskContent}</if>
+            <if test="taskStatus != null  and taskStatus != ''"> and task_status = #{taskStatus}</if>
+        </where>
+    </select>
+    
+    <select id="selectTaskManageById" parameterType="Long" resultMap="TaskManageResult">
+        <include refid="selectTaskManageVo"/>
+        where task_id = #{taskId}
+    </select>
+        
+    <insert id="insertTaskManage" parameterType="TaskManage">
+        insert into task_manage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskId != null ">task_id,</if>
+            <if test="userId != null ">user_id,</if>
+            <if test="taskTime != null ">task_time,</if>
+            <if test="taskContent != null  and taskContent != ''">task_content,</if>
+            <if test="taskStatus != null  and taskStatus != ''">task_status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskId != null ">#{taskId},</if>
+            <if test="userId != null ">#{userId},</if>
+            <if test="taskTime != null ">#{taskTime},</if>
+            <if test="taskContent != null  and taskContent != ''">#{taskContent},</if>
+            <if test="taskStatus != null  and taskStatus != ''">#{taskStatus},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTaskManage" parameterType="TaskManage">
+        update task_manage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null ">user_id = #{userId},</if>
+            <if test="taskTime != null ">task_time = #{taskTime},</if>
+            <if test="taskContent != null  and taskContent != ''">task_content = #{taskContent},</if>
+            <if test="taskStatus != null  and taskStatus != ''">task_status = #{taskStatus},</if>
+        </trim>
+        where task_id = #{taskId}
+    </update>
+
+    <delete id="deleteTaskManageById" parameterType="Long">
+        delete from task_manage where task_id = #{taskId}
+    </delete>
+
+    <delete id="deleteTaskManageByIds" parameterType="String">
+        delete from task_manage where task_id in 
+        <foreach item="taskId" collection="array" open="(" separator="," close=")">
+            #{taskId}
+        </foreach>
+    </delete>
+
+    <!--定时提醒(提前2分钟提醒),在sql语句查询时当前时间加2分钟，如果大于task_time，且task_status是0（未提醒）的记录查询出来-->
+    <select id="selectTaskManages" parameterType="Long" resultMap="TaskManageResult">
+        <include refid="selectTaskManageVo"/>
+        where DATE_FORMAT(ADDDATE(NOW(), INTERVAL 2 MINUTE),'%Y-%m-%d %H:%i:%s') > task_time and task_status = 0 and user_id = #{userId}
+    </select>
+    
+</mapper>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ymsw.order.mapper.YmswOrderMapper">
+    
+    <resultMap type="YmswOrder" id="YmswOrderResult">
+        <result property="orderId"    column="order_id"    />
+        <result property="customerId"    column="customer_id"    />
+        <result property="contractId"    column="contract_id"    />
+        <result property="contractPath"    column="contract_path"    />
+        <result property="addTime"    column="add_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="orderStatus"    column="order_status"    />
+        <result property="allowAmount"    column="allow_amount"    />
+        <result property="incomeGeneration"    column="income_generation"    />
+        <result property="orderRate"    column="order_rate"    />
+        <result property="sincerityMoney"    column="sincerity_money"    />
+        <result property="sincerityPayMethod"    column="sincerity_pay_method"    />
+        <result property="incomingChannel"    column="incoming_channel"    />
+        <result property="channelFee"    column="channel_fee"    />
+        <result property="incomingType"    column="incoming_type"    />
+        <result property="incomingAssistant"    column="incoming_assistant"    />
+        <result property="bankManager"    column="bank_manager"    />
+        <result property="orderRemark"    column="order_remark"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="userName"    column="user_name"    />
+        <result property="userId"    column="user_id"    />
+        <result property="customerName"    column="customer_name"    />
+        <result property="incomingTime"    column="incoming_time"    />
+        <result property="collectionTime"    column="collection_time"    />
+    </resultMap>
+
+    <sql id="selectYmswOrderVo">
+        select order_id, customer_id, contract_id, contract_path, add_time, update_time, order_status, allow_amount, income_generation, order_rate, sincerity_money, sincerity_pay_method, incoming_channel, channel_fee, incoming_type, incoming_assistant, bank_manager, order_remark from ymsw_order
+    </sql>
+
+    <sql id="queryYmswOrderVo">
+        select yc.customer_name, u.user_name, d.dept_name, order_id, yo.customer_id, contract_id, contract_path, add_time, yo.update_time, order_status, allow_amount, income_generation, order_rate, sincerity_money, sincerity_pay_method, incoming_channel, channel_fee, incoming_type, incoming_assistant, bank_manager, order_remark, yo.user_id, yo.incoming_time,yo.collection_time
+        from ymsw_order yo
+        left join ymsw_customer yc on yc.customer_id = yo.customer_id
+        left join sys_user u on u.user_id = yo.user_id
+        left join sys_dept d on d.dept_id = u.dept_id
+    </sql>
+    <select id="selectYmswOrderList" parameterType="YmswOrder" resultMap="YmswOrderResult">
+        <include refid="queryYmswOrderVo"/>
+        where 1=1
+        <if test="customerId != null "> and customer_id = #{customerId}</if>
+        <if test="contractId != null "> and contract_id = #{contractId}</if>
+        <if test="contractPath != null  and contractPath != ''"> and contract_path = #{contractPath}</if>
+        <if test="addTime != null "> and add_time = #{addTime}</if>
+        <if test="orderStatus != null  and orderStatus != ''"> and order_status = #{orderStatus}</if>
+        <if test="allowAmount != null "> and allow_amount = #{allowAmount}</if>
+        <if test="incomeGeneration != null "> and income_generation = #{incomeGeneration}</if>
+        <if test="orderRate != null "> and order_rate = #{orderRate}</if>
+        <if test="sincerityMoney != null "> and sincerity_money = #{sincerityMoney}</if>
+        <if test="sincerityPayMethod != null  and sincerityPayMethod != ''"> and sincerity_pay_method = #{sincerityPayMethod}</if>
+        <if test="incomingChannel != null  and incomingChannel != ''"> and incoming_channel = #{incomingChannel}</if>
+        <if test="channelFee != null "> and channel_fee = #{channelFee}</if>
+        <if test="incomingType != null  and incomingType != ''"> and incoming_type = #{incomingType}</if>
+        <if test="incomingAssistant != null  and incomingAssistant != ''"> and incoming_assistant = #{incomingAssistant}</if>
+        <if test="bankManager != null  and bankManager != ''"> and bank_manager = #{bankManager}</if>
+        <if test="orderRemark != null  and orderRemark != ''"> and order_remark = #{orderRemark}</if>
+        <if test="userId != null  and userId != ''"> and yo.user_id = #{userId}</if>
+        <if test="params.beginincomingTime != null and params.beginincomingTime != ''"><!-- 进件开始时间检索 -->
+            and date_format(yo.incoming_time,'%y%m%d') &gt;= date_format(#{params.beginincomingTime},'%y%m%d')
+        </if>
+        <if test="params.endincomingTime != null and params.endincomingTime != ''"><!-- 进件结束时间检索 -->
+            and date_format(yo.incoming_time,'%y%m%d') &lt;= date_format(#{params.endincomingTime},'%y%m%d')
+        </if>
+        <!-- 当传入的为部门id时，查询改部门及以下的所有数据 -->
+        <!-- select dept_id from sys_dept where find_in_set(#{params.deptId}, ancestors) 是查询该部门的子部门id -->
+        <if test="params.deptId != null  and params.deptId != ''"> and (d.dept_id in (select dept_id from sys_dept where find_in_set(#{params.deptId}, ancestors)) or d.dept_id = #{params.deptId})</if>
+        <if test="params.customerName != null  and params.customerName != ''"> and yc.customer_name like concat('%', #{params.customerName}, '%') </if>
+        <if test="params.customerPhone != null  and params.customerPhone != ''"> and yc.customer_phone like concat('%', #{params.customerPhone}, '%') </if>
+        <!-- 数据范围过滤 -->
+        ${params.dataScope}
+    </select>
+    
+    <select id="selectYmswOrderById" parameterType="Long" resultMap="YmswOrderResult">
+        <include refid="queryYmswOrderVo"/>
+        where order_id = #{orderId}
+    </select>
+        
+    <insert id="insertYmswOrder" parameterType="YmswOrder" useGeneratedKeys="true" keyProperty="orderId">
+        insert into ymsw_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerId != null ">customer_id,</if>
+            <if test="contractId != null ">contract_id,</if>
+            <if test="contractPath != null  and contractPath != ''">contract_path,</if>
+            <if test="addTime != null ">add_time,</if>
+            <if test="updateTime != null ">update_time,</if>
+            <if test="orderStatus != null  and orderStatus != ''">order_status,</if>
+            <if test="allowAmount != null ">allow_amount,</if>
+            <if test="incomeGeneration != null ">income_generation,</if>
+            <if test="orderRate != null ">order_rate,</if>
+            <if test="sincerityMoney != null ">sincerity_money,</if>
+            <if test="sincerityPayMethod != null  and sincerityPayMethod != ''">sincerity_pay_method,</if>
+            <if test="incomingChannel != null  and incomingChannel != ''">incoming_channel,</if>
+            <if test="channelFee != null ">channel_fee,</if>
+            <if test="incomingType != null  and incomingType != ''">incoming_type,</if>
+            <if test="incomingAssistant != null  and incomingAssistant != ''">incoming_assistant,</if>
+            <if test="bankManager != null  and bankManager != ''">bank_manager,</if>
+            <if test="orderRemark != null  and orderRemark != ''">order_remark,</if>
+            <if test="userId != null ">user_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customerId != null ">#{customerId},</if>
+            <if test="contractId != null ">#{contractId},</if>
+            <if test="contractPath != null  and contractPath != ''">#{contractPath},</if>
+            <if test="addTime != null ">#{addTime},</if>
+            <if test="updateTime != null ">#{updateTime},</if>
+            <if test="orderStatus != null  and orderStatus != ''">#{orderStatus},</if>
+            <if test="allowAmount != null ">#{allowAmount},</if>
+            <if test="incomeGeneration != null ">#{incomeGeneration},</if>
+            <if test="orderRate != null ">#{orderRate},</if>
+            <if test="sincerityMoney != null ">#{sincerityMoney},</if>
+            <if test="sincerityPayMethod != null  and sincerityPayMethod != ''">#{sincerityPayMethod},</if>
+            <if test="incomingChannel != null  and incomingChannel != ''">#{incomingChannel},</if>
+            <if test="channelFee != null ">#{channelFee},</if>
+            <if test="incomingType != null  and incomingType != ''">#{incomingType},</if>
+            <if test="incomingAssistant != null  and incomingAssistant != ''">#{incomingAssistant},</if>
+            <if test="bankManager != null  and bankManager != ''">#{bankManager},</if>
+            <if test="orderRemark != null  and orderRemark != ''">#{orderRemark},</if>
+            <if test="userId != null ">#{userId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateYmswOrder" parameterType="YmswOrder">
+        update ymsw_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customerId != null ">customer_id = #{customerId},</if>
+            <if test="contractId != null ">contract_id = #{contractId},</if>
+            <if test="contractPath != null  and contractPath != ''">contract_path = #{contractPath},</if>
+            <if test="addTime != null ">add_time = #{addTime},</if>
+            <if test="updateTime != null ">update_time = #{updateTime},</if>
+            <if test="orderStatus != null  and orderStatus != ''">order_status = #{orderStatus},</if>
+            <if test="allowAmount != null ">allow_amount = #{allowAmount},</if>
+            <if test="incomeGeneration != null ">income_generation = #{incomeGeneration},</if>
+            <if test="orderRate != null ">order_rate = #{orderRate},</if>
+            <if test="sincerityMoney != null ">sincerity_money = #{sincerityMoney},</if>
+            <if test="sincerityPayMethod != null  and sincerityPayMethod != ''">sincerity_pay_method = #{sincerityPayMethod},</if>
+            <if test="incomingChannel != null  and incomingChannel != ''">incoming_channel = #{incomingChannel},</if>
+            <if test="channelFee != null ">channel_fee = #{channelFee},</if>
+            <if test="incomingType != null  and incomingType != ''">incoming_type = #{incomingType},</if>
+            <if test="incomingAssistant != null  and incomingAssistant != ''">incoming_assistant = #{incomingAssistant},</if>
+            <if test="bankManager != null  and bankManager != ''">bank_manager = #{bankManager},</if>
+            <if test="orderRemark != null  and orderRemark != ''">order_remark = #{orderRemark},</if>
+            <if test="incomingTime != null">incoming_time = #{incomingTime},</if>
+            <if test="collectionTime != null">collection_time = #{collectionTime},</if>
+            <if test="allowTime != null">allow_time = #{allowTime},</if>
+            <if test="userId != null  and userId != ''">user_id = #{userId},</if>
+        </trim>
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="deleteYmswOrderById" parameterType="Long">
+        delete from ymsw_order where order_id = #{orderId}
+    </delete>
+
+    <delete id="deleteYmswOrderByIds" parameterType="String">
+        delete from ymsw_order where order_id in 
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </delete>
+    
+</mapper>

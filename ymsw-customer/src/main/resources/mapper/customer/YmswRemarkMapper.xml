@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ymsw.customer.mapper.YmswRemarkMapper">
+    
+    <resultMap type="YmswRemark" id="YmswRemarkResult">
+        <result property="remarkId"    column="remark_id"    />
+        <result property="remarkContent"    column="remark_content"    />
+        <result property="userId"    column="user_id"    />
+        <result property="remarkTime"    column="remark_time"    />
+        <result property="customerId"    column="customer_id"    />
+        <result property="isCharge"    column="is_charge"    />
+        <result property="userName"    column="user_name"    />
+    </resultMap>
+
+    <sql id="selectYmswRemarkVo">
+        select remark_id, remark_content, user_id, remark_time, customer_id, is_charge from ymsw_remark
+    </sql>
+
+    <select id="selectYmswRemarkList" parameterType="YmswRemark" resultMap="YmswRemarkResult">
+        select remark_id, remark_content, yr.user_id, remark_time, customer_id, is_charge,u.user_name from ymsw_remark yr
+        left join sys_user u on u.user_id = yr.user_id
+        <where>  
+            <if test="remarkContent != null  and remarkContent != ''"> and remark_content = #{remarkContent}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="remarkTime != null "> and remark_time = #{remarkTime}</if>
+            <if test="customerId != null "> and customer_id = #{customerId}</if>
+            <if test="isCharge != null  and isCharge != ''"> and is_charge = #{isCharge}</if>
+        </where>
+        order by remark_time desc
+    </select>
+    
+    <select id="selectYmswRemarkById" parameterType="Long" resultMap="YmswRemarkResult">
+        <include refid="selectYmswRemarkVo"/>
+        where remark_id = #{remarkId}
+    </select>
+        
+    <insert id="insertYmswRemark" parameterType="YmswRemark" useGeneratedKeys="true" keyProperty="remarkId">
+        insert into ymsw_remark
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="remarkContent != null  and remarkContent != ''">remark_content,</if>
+            <if test="userId != null ">user_id,</if>
+            <if test="remarkTime != null ">remark_time,</if>
+            <if test="customerId != null ">customer_id,</if>
+            <if test="isCharge != null  and isCharge != ''">is_charge,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="remarkContent != null  and remarkContent != ''">#{remarkContent},</if>
+            <if test="userId != null ">#{userId},</if>
+            <if test="remarkTime != null ">#{remarkTime},</if>
+            <if test="customerId != null ">#{customerId},</if>
+            <if test="isCharge != null  and isCharge != ''">#{isCharge},</if>
+         </trim>
+    </insert>
+
+    <update id="updateYmswRemark" parameterType="YmswRemark">
+        update ymsw_remark
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="remarkContent != null  and remarkContent != ''">remark_content = #{remarkContent},</if>
+            <if test="userId != null ">user_id = #{userId},</if>
+            <if test="remarkTime != null ">remark_time = #{remarkTime},</if>
+            <if test="customerId != null ">customer_id = #{customerId},</if>
+            <if test="isCharge != null  and isCharge != ''">is_charge = #{isCharge},</if>
+        </trim>
+        where remark_id = #{remarkId}
+    </update>
+
+    <delete id="deleteYmswRemarkById" parameterType="Long">
+        delete from ymsw_remark where remark_id = #{remarkId}
+    </delete>
+
+    <delete id="deleteYmswRemarkByIds" parameterType="String">
+        delete from ymsw_remark where remark_id in 
+        <foreach item="remarkId" collection="array" open="(" separator="," close=")">
+            #{remarkId}
+        </foreach>
+    </delete>
+    
+</mapper>

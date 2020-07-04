@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('抽回重分配')" />
+    <style>
+        body{font-size: 15px}
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="row form-horizontal">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label col-sm-offset-3" style="text-align:left" >业务经理</label>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <input id="search" placeholder="姓名搜索业务经理" class="form-control" type="text" onblur="search()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id="form-reallocation" class="form-horizontal">
+            <!--<div class="row form-horizontal" th:each="user:${sysUsers}">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label col-sm-offset-3" style="text-align:left" >
+                            <div class="checkbox check-box">
+                                <input th:name="${user.userId}"  type="checkbox"  th:value="${user.userId}" th:text="${user.userName}">
+                            </div>
+                        </label>
+                        <div class="col-sm-6">
+                            <div class="input-group">
+                                <input th:name="${'count'+user.userId}" placeholder="数目" class="form-control" type="number" min=1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>-->
+        </form>
+    </div>
+	<th:block th:include="include :: footer" />
+
+<script>
+    //页面加载完成后获取用户列表，并展示
+    $(function () {
+        search();
+    })
+    // 根据业务经理名字模糊查找
+    function search(){
+        var userName = $.common.trim($("#search").val());
+        var data = {"params[userName]":userName}
+        $.ajax({
+            type: "post",
+            url: ctx+"system/user/searchUserListByUserName",
+            dataType: "json",
+            data: data,
+            success: function (result) {
+                if (result.code == 0) {
+                    var html = "";
+                    var userList = result.data;
+                    for (var i in userList){
+                        html += "<div class='row form-horizontal'>" +
+                                    "<div class='col-sm-12'>" +
+                                        "<div class='form-group'>" +
+                                            "<label class='col-sm-2 control-label col-sm-offset-3' style='text-align:left'>" +
+                                                "<div class='checkbox check-box'>" +
+                                                    "<input type='checkbox' value='" + userList[i].userId + "' name='" + userList[i].userId+"'><span id='userName"+userList[i].userId+"'>" + userList[i].userName +
+                                                "</span></div>" +
+                                            "</label>" +
+                                            "<div class='col-sm-6'>" +
+                                                "<div class='input-group'>" +
+                                                    "<input name='count" + userList[i].userId + "' placeholder='数目' class='form-control' type='number' min=1>" +
+                                                "</div>" +
+                                            "</div>" +
+                                        "</div>" +
+                                    "</div>" +
+                                "</div>"
+                    }
+                    $("#form-reallocation").html(html)
+                } else {
+                    $.modal.msgError(result.msg);
+                }
+            },
+            error: function (result) {
+                $.modal.msgError(result.msg);
+            }
+        });
+    }
+
+    var ymswCustomers = JSON.parse(sessionStorage.getItem('ymswCustomers'));
+    //点击确定时提交，可参考修改密码user/resetPwd.html
+    function submitHandler() {
+        var userList = [];  //需要提交的数据
+        var submit = true;
+        var totolCount = 0;
+        $("input:checkbox:checked").each(function () {
+            var userId = $(this).val();
+            var count = $("input[name=count"+userId+"]").val();
+            var userName = $("#userName"+userId).text();
+            if ($.common.isEmpty(count) || count <= 0){
+                submit = false;
+            }else {
+                totolCount += parseInt(count,10);
+            }
+            userList.push({"userId":userId,"params":{"count":count},"userName":userName});
+        })
+        var data = {"userList":userList,"ymswCustomers":ymswCustomers}
+        //如果勾选下了客户经理而没有设置对应的数目，就禁止提交。如果带分配的客户数量和总数目不相等，也禁止提交。
+        if (submit) {
+            if (totolCount != ymswCustomers.length) {
+                $.modal.msgError("待分配的客户总数与总数目不一致！");
+            }else {
+                $.ajax({
+                    type: "POST",
+                    url: ctx + "customer/main/saveReallocation",
+                    contentType:"application/json",
+                    data: JSON.stringify(data),
+                    traditional:true,
+                    dataType:"json",
+                    success: function(result){
+                        var type = 1;
+                        if (result.code == 500){
+                            type = 0;
+                        }
+                        $.modal.confirm2(type,result.msg,function () {
+                            $.modal.close();//关闭当前窗体
+                            window.parent.$.table.refresh();//刷新父表格
+                        });
+                    },
+                    error: function(){
+                    }
+                });
+            }
+        }else {
+            $.modal.msgError("请填写数目！");
+        }
+    }
+</script>
+</body>
+</html>

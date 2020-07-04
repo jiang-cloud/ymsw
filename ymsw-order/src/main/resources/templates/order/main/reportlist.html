@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('订单信息表列表')" />
+    <th:block th:include="include :: select2-css" />
+    <style>
+        #bootstrap-table>thead>tr {background-color: rgb(237,85,101);color: white;}
+        #bootstrap-table>thead>tr>th {border: 1px solid white;font-size: 15px}
+        #bootstrap-table>tbody>tr:nth-child(odd) {background: rgba(237, 255, 245, 0.68);}
+        .finger{ cursor: pointer;}
+        body{font-size: 15px}
+    </style>
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: select2-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('order:main:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('order:main:remove')}]];
+        var orderStatus = [[${@dict.getType('order_status')}]];
+        var incomingChannel = [[${@dict.getType('incoming_channel')}]];
+        var prefix = ctx + "order/main";
+
+        //var queryParams = JSON.parse(sessionStorage.getItem('queryParams'));
+        function queryParams0(params) {
+            var queryParams = JSON.parse(sessionStorage.getItem('queryParams'));
+            var search = $.table.queryParams(params);
+            search.userId = queryParams.userId;
+            search.deptId = queryParams.deptId;
+            search.dataYearMonth = queryParams.dataYearMonth;
+            search.totalOrToday = queryParams.totalOrToday;
+            search.type = queryParams.type;
+            return search;
+        }
+
+        $(function() {
+            var options = {
+                url: prefix + "/reportOrderList",
+                sortName: "addTime",
+                sortOrder: "desc",
+                striped: true,
+                showToggle: false,
+                modalName: "签约进件",
+                queryParams: queryParams0,
+                onClickCell: function (field,value,row,$element) {  //点击姓名、性别、额度、年龄、状态单元格时进入编辑页面
+                    if (field == 'customerName' && editFlag != "hidden") {
+                        $.operate.editTab(row.orderId);
+                    }
+                },
+                columns: [
+                {
+                    field : 'orderId', 
+                    title : '编号',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'deptName',
+                    title : '部门',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'userName',
+                    title : '客户经理',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'customerName',
+                    title : '客户姓名',
+                    halign: 'center',
+                    align: 'center',
+                    class:"finger"
+                },
+                {
+                    field : 'incomingChannel',
+                    title : '进件渠道',
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(incomingChannel, value);
+                    }
+                },
+                {
+                    field : 'orderStatus',
+                    title : '订单状态',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(orderStatus, value);
+                    }
+                },
+                {
+                    field : 'allowAmount',
+                    title : '批款额度(万元)',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'incomeGeneration',
+                    title : '创收(元)',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'sincerityMoney',
+                    title : '诚意金(元)',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'orderRate',
+                    title : '点数(%)',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'contractId', 
+                    title : '合同编号',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'addTime',
+                    title : '签约时间',
+                    halign: 'center',
+                    align: 'center',
+                    sortable: true,
+                    formatter: function(value, row, index) {
+                        if(value != null){
+                            return value.substring(0,16);
+                        }
+                    }
+                },
+                {
+                    field : 'incomingTime',
+                    title : '进件时间',
+                    sortable: true,
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        if(value != null){
+                            return value.substring(0,16);
+                        }
+                    }
+                }
+                /*{
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.orderId + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.orderId + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }*/]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

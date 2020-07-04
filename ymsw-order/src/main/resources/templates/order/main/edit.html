@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('修改订单信息表')"/>
+    <th:block th:include="include :: datetimepicker-css"/>
+    <th:block th:include="include :: select2-css" />
+    <style>
+        body{font-size: 15px}
+    </style>
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="background-color: #efefef;height: 100%">
+    <div class="form-inline search-collapse" style="padding:10px 10px;margin-top: -8px">
+        <div class="form-group">
+            <label for="exampleInputName1">合同编号：</label>
+            <input type="text" class="form-control" id="exampleInputName1" readonly th:value="${ymswOrder.contractId}">
+        </div>
+        <div class="form-group" style="margin-left: 20px">
+            <label for="exampleInputEmail2">客户姓名：</label>
+            <input type="text" class="form-control" id="exampleInputEmail2" readonly th:value="${ymswOrder.customerName}">
+        </div>
+
+        <div class="form-group" style="margin-left: 20px">
+            <label for="exampleInputEmail3">进件日期：</label>
+            <input type="text" class="form-control" id="exampleInputEmail3" readonly
+                   th:value="${#dates.format(ymswOrder.incomingTime, 'yyyy-MM-dd HH:mm')}">
+        </div>
+        <div class="form-group" style="margin-left: 20px">
+            <label for="exampleInputEmail4">客户经理：</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="exampleInputEmail4" readonly th:value="${ymswOrder.userName}">
+            </div>
+        </div>
+        <div class="form-group" style="margin-left: 20px">
+            <label for="exampleInputEmail5">诚意金：</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="exampleInputEmail5" readonly th:value="${ymswOrder.sincerityMoney}">
+                <div class="input-group-addon">元</div>
+            </div>
+        </div>
+    </div>
+    <div class="search-collapse" style="padding:10px 10px;">
+        <form class="form-inline" id="form-main-edit" th:object="${ymswOrder}">
+            <input name="customerId" th:field="*{orderId}" type="hidden">
+            <div>
+                <div class="input-group col-xs-2">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">进件助理</div>
+                    <select name="incomingAssistant" class="form-control"
+                            th:with="type=${@dict.getType('incoming_assistant')}">
+                        <option value="">-请选择-</option>
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"
+                                th:field="*{incomingAssistant}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">进件渠道</div>
+                    <select name="incomingChannel" class="form-control"
+                            th:with="type=${@dict.getType('incoming_channel')}">
+                        <option value="">-请选择-</option>
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"
+                                th:field="*{incomingChannel}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">进件类型</div>
+                    <select name="incomingType" class="form-control"
+                            th:with="type=${@dict.getType('incoming_type')}">
+                        <option value="">-请选择-</option>
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"
+                                th:field="*{incomingType}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">订单状态</div>
+                    <select name="orderStatus" class="form-control"
+                            th:with="type=${@dict.getType('order_status')}">
+                        <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"
+                                th:field="*{orderStatus}"></option>
+                    </select>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">银行经理</div>
+                    <input name="bankManager" th:field="*{bankManager}" class="form-control" type="text" maxlength="10">
+                </div>
+                <!--<div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">客户经理</div>
+                    <select name="userId" class="form-control" >
+                        <option th:each="user,sysUsers:${sysUsers}" th:value="${user.userId}" th:text="${user.userName}" th:selected="*{userId} eq ${user.userId}"></option>
+                    </select>
+                </div>-->
+            </div>
+
+            <div style="margin-top: 20px">
+                <div class="input-group col-xs-2">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">点数</div>
+                    <input name="orderRate" th:field="*{orderRate}" class="form-control" type="number" min="0">
+                    <div class="input-group-addon"style="font-size: 15px">%</div>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">批款额度</div>
+                    <input name="allowAmount" th:field="*{allowAmount}" class="form-control" type="number" min="0">
+                    <div class="input-group-addon"style="font-size: 15px">万</div>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">创收</div>
+                    <input name="incomeGeneration" th:field="*{incomeGeneration}" class="form-control" type="number" min="0">
+                    <div class="input-group-addon"style="font-size: 15px">元</div>
+                </div>
+                <div class="input-group col-xs-2" style="margin-left: 20px">
+                    <div class="input-group-addon" style="background-color: #efefef;width: 50%;font-size: 15px">渠道费</div>
+                    <input name="channelFee" th:field="*{channelFee}" class="form-control" type="number" min="0">
+                    <div class="input-group-addon" style="font-size: 15px">元</div>
+                </div>
+            </div>
+            <div class="input-group" style="margin-top: 10px;width: 100%">
+                <label for="exampleInputName2">备注：</label>
+                <textarea class="form-control" rows="2" name="orderRemark" th:text="*{orderRemark}"></textarea>
+            </div>
+            <div class="row" style="margin-top: 10px;">
+                <div class="col-sm-offset-5 col-sm-10">
+                    <button type="button" class="btn btn-md btn-primary" onclick="submitHandler()"><i
+                            class="fa fa-check"></i>保 存
+                    </button>&nbsp;
+                    <button type="button" class="btn btn-md btn-danger" onclick="closeItem()"><i
+                            class="fa fa-reply-all"></i>关 闭
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: datetimepicker-js"/>
+<th:block th:include="include :: select2-js" />
+<script type="text/javascript">
+    var prefix = ctx + "order/main";
+    $("#form-main-edit").validate({
+        focusCleanup: true,
+        onkeyup: false,
+        rules: {
+            orderRate: {min:0,max:999},
+            bankManager: {isName:true},
+            allowAmount: {min:0,max:9999,digits:true},
+            incomeGeneration: {min:0,max:500000},
+            channelFee: {min:0,max:500000}
+        },
+        messages: {
+            orderRate:{min:"不能小于0",max:"不能大于999"},
+            bankManager:{isName:"请填写名字"},
+            allowAmount:{min:"不能小于0",max:"不能大于9999",digits:"请输入整数"},
+            incomeGeneration:{min:"不能小于0",max:"不能大于500000"},
+            channelFee:{min:"不能小于0",max:"不能大于500000"}
+        },
+    });
+
+    function submitHandler() {
+        if ($.validate.form()) {
+            $.modal.confirm("确定要保存吗?",function () {
+                $.operate.saveTab(prefix + "/edit", $('#form-main-edit').serialize())
+            });
+        }
+    }
+</script>
+</body>
+</html>

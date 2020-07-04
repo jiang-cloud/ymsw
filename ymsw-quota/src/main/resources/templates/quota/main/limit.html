@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('配额管理列表')" />
+    <th:block th:include="include :: bootstrap-editable-css" />
+    <th:block th:include="include :: select2-css" />
+    <style>
+        #bootstrap-table>thead>tr {background-color: rgb(237,85,101);color: white;}
+        #bootstrap-table>thead>tr>th {border: 1px solid white;font-size: 15px}
+        #bootstrap-table>tbody>tr:nth-child(odd) {background: rgba(237, 255, 245, 0.68);}
+        body{font-size: 15px}
+    </style>
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse" style="padding-left: 30px">
+                <form id="formId" class="form-inline">
+                    <div class="row">
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">门店</div>
+                            <select id="userFlag" th:with="type=${@dict.getType('user_flag')}" class="form-control">
+                                <option value="">-不限-</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                        <div class="input-group col-xs-2 col-xs-offset-1">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">限额设置</div>
+                            <input type="number" class="form-control" min="0" id="allowTotalCount">
+                        </div>
+                        <div class="input-group col-xs-12">
+<!--                            <code>注：名单限额只对再分配情况有效，即进行手动再分配时，若对应业务员当前所负责的客户数超过设置的名单限额，则不再对其分配新客户。</code>-->
+                        </div>
+                    </div><hr>
+                    <div class="row">
+                        <div class="input-group col-xs-2">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">姓名</div>
+                            <input type="text" class="form-control" name="params[userName]">
+                        </div>
+                        <div class="input-group col-xs-2 col-xs-offset-1">
+                            <div class="input-group-addon" style="background-color: #efefef;width: 50%">手机号</div>
+                            <input type="text" class="form-control" name="params[phonenumber]">
+                        </div>
+                        <div class="input-group col-xs-2 col-xs-offset-1">
+                            <div class="input-group-addon " style="background-color: #efefef;width: 50%">所属组织</div>
+                            <select name="params[deptId]" class="form-control">
+                                <option value="">-不限-</option>
+                                <option th:each="sysDept,sysDepts:${sysDepts}" th:value="${sysDept.deptId}" th:text="${sysDept.deptName}"></option>
+                            </select>
+                        </div>
+                        <a class="btn btn-primary btn-rounded btn-md" style="margin-left: 20px" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-md" id="toolbar" role="group">
+                <a class="btn btn-warning multiple disabled" shiro:hasPermission="quota:limit:edit" data-toggle="modal" data-target="#myModal">
+                    <i class="fa fa-cogs"></i> 限额设置
+                </a>
+                <div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content animated bounceInRight">
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>限额数：</label>
+                                    <input id="allowTotalCount2" type="number" placeholder="请输入限额数" class="form-control" min="0">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" onclick="submit2()">保存</button>
+                                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: bootstrap-table-editable-js" />
+     <th:block th:include="include :: select2-js" />
+    <script th:inline="javascript">
+        var prefix = ctx + "quota/main";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                // createUrl: prefix + "/add",
+                // updateUrl: prefix + "/edit/{id}",
+                //removeUrl: prefix + "/batchChangeStatus",
+                // exportUrl: prefix + "/export",
+                modalName: "配额管理",
+                striped: true,//隔行换色
+                showToggle: false,
+                onEditableSave: editAllowTodayCount,
+                rememberSelected: true,
+                uniqueId: "quotaId",
+                columns: [{
+                    field: 'state',
+                    checkbox: true
+                },
+                {
+                    field : 'quotaId',
+                    title : '编号',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'userName',
+                    title : '姓名',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'phonenumber',
+                    title : '业务手机',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : 'allowTotalCount',
+                    title : '限额数',
+                    halign: 'center',
+                    align: 'center',
+                    editable : {
+                        type : 'text',
+                        title : '配额',
+                        min: 0,
+                        emptytext : "【配额】为空",
+                        validate : function(value) {
+                            if (!value) return '配额不能为空';
+                            if (isNaN(value)) return '必须是数字';
+                            var r = /^\d+$/;
+                            if (!r.test(value)) return '必须是正整数';
+                        }
+                    }
+                },
+                {
+                    field : 'nowTotalCount',
+                    title : '当前客户数',
+                    halign: 'center',
+                    align: 'center'
+                },
+                {
+                    field : '',
+                    title : '剩余额度',
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function (value, row, index) {
+                        return row.allowTotalCount-row.nowTotalCount;
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+
+
+        // 批量设置限额
+        function submit2() {
+            var uniqueId = table.options.uniqueId;
+            // 工具栏按钮控制
+            var rows = $.common.isEmpty(uniqueId) ? $.table.selectFirstColumns() : $.table.selectColumns(uniqueId);
+            if (rows.length == 0) {
+                $.modal.alertWarning("请至少选择一条记录");
+                return;
+            }
+            var allowTotalCount2 = $("#allowTotalCount2").val();
+            var r = /^\d+$/;
+            if (!r.test(allowTotalCount2)){
+                $.modal.msgError("请输入正整数！");
+                return;
+            }
+            var url = prefix + "/editTotalCount";
+            var data = { "ids": rows.join(), "allowTotalCount":allowTotalCount2 };
+            $.operate.submit(url, "post", "json", data,function () {
+                $('#myModal').modal('hide');
+            });
+        }
+
+        //单元格内修改限额
+        function editAllowTodayCount (field, row, oldValue, $el) {
+            var allowTodayCount = row[field];
+            var quotaId = row.quotaId;
+            $.operate.submit(prefix + "/editTotalCount", "post", "json", {"allowTotalCount":allowTodayCount,"ids":quotaId});
+        }
+
+        //批量配额设置
+        $("#allowTotalCount").blur(function () {
+            var url = prefix + "/editAllowTotalCount";
+            var data;
+            var allowTotalCount = $(this).val();
+            var userFlag = $("#userFlag").val();
+            var r = /^\d+$/;
+            if (!r.test(allowTotalCount)){
+                $.modal.msgError("请输入正整数！");
+            }else {
+                $.modal.confirm("确定设置限额？",function () {
+                    data = { "userFlag":userFlag, "allowTotalCount":allowTotalCount};
+                    $.operate.submit(url, "post", "json", data);
+                });
+            }
+        })
+    </script>
+</body>
+</html>

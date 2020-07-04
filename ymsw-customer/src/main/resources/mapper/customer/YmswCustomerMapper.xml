@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ymsw.customer.mapper.YmswCustomerMapper">
+    
+    <resultMap type="YmswCustomer" id="YmswCustomerResult">
+        <result property="customerId"    column="customer_id"    />
+        <result property="customerName"    column="customer_name"    />
+        <result property="customerSex"    column="customer_sex"    />
+        <result property="customerPhone"    column="customer_phone"    />
+        <result property="customerStatus"    column="customer_status"    />
+        <result property="customerBirth"    column="customer_birth"    />
+        <result property="customerQuota"    column="customer_quota"    />
+        <result property="customerStar"    column="customer_star"    />
+        <result property="phoneStatus"    column="phone_status"    />
+        <result property="applyTime"    column="apply_time"    />
+        <result property="hasHouse"    column="has_house"    />
+        <result property="hasCar"    column="has_car"    />
+        <result property="hasWarranty"    column="has_warranty"    />
+        <result property="hasSocial"    column="has_social"    />
+        <result property="hasWeilidai"    column="has_weilidai"    />
+        <result property="hasCreditCard"    column="has_credit_card"    />
+        <result property="hasAccumulation"    column="has_accumulation"    />
+        <result property="isOverdue"    column="is_overdue"    />
+        <result property="customerType"    column="customer_type"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="customerOccupation"    column="customer_occupation"    />
+        <result property="customerSalary"    column="customer_salary"    />
+        <result property="channel"    column="channel"    />
+        <result property="remarkTime"    column="remark_time"    />
+        <result property="distributeTime"    column="distribute_time"    />
+        <result property="userName"    column="user_name"    />
+        <result property="remark" column="remark_content"    />
+        <result property="deptName" column="dept_name"    />
+    </resultMap>
+
+    <sql id="selectYmswCustomerVo">
+        select customer_id, customer_name, customer_sex, customer_phone, customer_star, customer_status, phone_status, customer_birth, customer_quota, apply_time, has_house, has_car, has_warranty, has_social, has_weilidai, has_credit_card, has_accumulation, is_overdue, customer_type, dept_id, user_id, customer_occupation, customer_salary, channel, remark_time, distribute_time from ymsw_customer
+    </sql>
+
+    <!--我的客户列表查询，不包括收藏夹和公共池里的客户（通过ycp.customer_id is null来过滤）-->
+    <!--数据范围：仅查询个人的客户-->
+    <select id="selectYmswCustomerList" parameterType="YmswCustomer" resultMap="YmswCustomerResult">
+        select u.user_name, yr.remark_content, yc.customer_id,yc.phone_status, customer_name, customer_sex, customer_phone, customer_star, customer_status, customer_birth, customer_quota, apply_time, has_house, has_car, has_warranty, has_weilidai, has_credit_card, has_accumulation, is_overdue, customer_type, yc.dept_id, yc.user_id, customer_occupation, customer_salary, channel, yc.remark_time, distribute_time
+        from ymsw_customer yc
+        left join ymsw_collection_pool ycp on yc.customer_id =ycp.customer_id
+        left join ymsw_remark yr on yr.customer_id = yc.customer_id and yc.remark_time = yr.remark_time
+        left join sys_user u on yc.user_id = u.user_id
+        left join sys_dept d on u.dept_id = d.dept_id
+        where ycp.customer_id is null
+            <if test="customerName != null  and customerName != ''"> and customer_name like concat('%', #{customerName}, '%')</if>
+            <!--<if test="customerSex != null  and customerSex != ''"> and customer_sex = #{customerSex}</if>-->
+            <if test="customerPhone != null  and customerPhone != ''"> and customer_phone like concat('%', #{customerPhone}, '%')</if>
+            <if test="customerStatus != null  and customerStatus != ''"> and customer_status = #{customerStatus}</if>
+            <if test="customerStar != null  and customerStar != ''"> and customer_star = #{customerStar}</if>
+            <if test="phoneStatus != null  and phoneStatus != ''"> and phone_status = #{phoneStatus}</if>
+            <!--<if test="customerBirth != null "> and customer_birth = #{customerBirth}</if>-->
+            <!--<if test="customerQuota != null "> and customer_quota = #{customerQuota}</if>-->
+            <!--<if test="applyTime != null "> and apply_time = #{applyTime}</if>-->
+            <if test="hasHouse != null  and hasHouse != ''"> and has_house = #{hasHouse}</if>
+            <if test="hasCar != null  and hasCar != ''"> and has_car = #{hasCar}</if>
+            <if test="hasWarranty != null  and hasWarranty != ''"> and has_warranty = #{hasWarranty}</if>
+            <if test="hasWeilidai != null  and hasWeilidai != ''"> and has_weilidai = #{hasWeilidai}</if>
+            <if test="hasCreditCard != null  and hasCreditCard != ''"> and has_credit_card = #{hasCreditCard}</if>
+            <if test="hasAccumulation != null  and hasAccumulation != ''"> and has_accumulation = #{hasAccumulation}</if>
+            <if test="hasSocial != null  and hasSocial != ''"> and has_social = #{hasSocial}</if>
+            <!--<if test="isOverdue != null  and isOverdue != ''"> and is_overdue = #{isOverdue}</if>-->
+            <if test="customerType != null  and customerType != ''"> and customer_type = #{customerType}</if>
+            <!--<if test="deptId != null "> and dept_id = #{deptId}</if>-->
+            <if test="userId != null "> and yc.user_id = #{userId}</if>
+            <!--<if test="customerOccupation != null  and customerOccupation != ''"> and customer_occupation = #{customerOccupation}</if>-->
+            <if test="customerSalary != null  and customerSalary != ''"> and customer_salary = #{customerSalary}</if>
+            <!--<if test="channel != null  and channel != ''"> and channel = #{channel}</if>-->
+            <!--<if test="distributeTime != null "> and distribute_time = #{distributeTime}</if>-->
+            <!-- 未跟进天数，当前时间减去最后备注时间得到天数 -->
+            <if test="params.noDays != null and params.noDays != ''"> and datediff(NOW(),yc.remark_time)>= #{params.noDays}</if>
+            <if test="params.beginRemarkTime != null and params.beginRemarkTime != ''"><!-- 备注开始时间检索 -->
+                AND date_format(yc.remark_time,'%y%m%d') &gt;= date_format(#{params.beginRemarkTime},'%y%m%d')
+            </if>
+            <if test="params.endRemarkTime != null and params.endRemarkTime != ''"><!-- 备注结束时间检索 -->
+                AND date_format(yc.remark_time,'%y%m%d') &lt;= date_format(#{params.endRemarkTime},'%y%m%d')
+            </if>
+            <!-- 数据范围过滤 -->
+            <!--${params.dataScope}-->
+</select>
+
+    <!--    客户管理菜单里的客户列表查询，不包括收藏夹里的客户，也不包含公共池里的客户（通过ycp.customer_id is null）-->
+    <!--数据范围：查询客户表里的所有客户（但不包括收藏夹里的客户，也不包括公共池里的客户）-->
+    <select id="selectManageList" parameterType="YmswCustomer" resultMap="YmswCustomerResult">
+        select u.user_name, yr.remark_content, yc.phone_status, yc.customer_id, customer_name, customer_sex, customer_phone, customer_star, customer_status, customer_birth, customer_quota, apply_time, has_house, has_car, has_warranty, has_weilidai, has_credit_card, has_accumulation, is_overdue, customer_type, yc.dept_id, yc.user_id, customer_occupation, customer_salary, channel, yc.remark_time, distribute_time
+        from ymsw_customer yc
+        left join ymsw_collection_pool ycp on yc.customer_id =ycp.customer_id
+        left join ymsw_remark yr on yr.customer_id = yc.customer_id and yc.remark_time = yr.remark_time
+        left join sys_user u on yc.user_id = u.user_id
+        left join sys_dept d on u.dept_id = d.dept_id
+        where ycp.customer_id is null
+        <if test="customerName != null  and customerName != ''"> and customer_name like concat('%', #{customerName}, '%')</if>
+        <if test="customerPhone != null  and customerPhone != ''"> and customer_phone like concat('%', #{customerPhone}, '%')</if>
+        <if test="customerStatus != null  and customerStatus != ''"> and customer_status = #{customerStatus}</if>
+        <if test="phoneStatus != null  and phoneStatus != ''"> and phone_status = #{phoneStatus}</if>
+        <if test="customerStar != null and customerStar!= '' "> and customer_star = #{customerStar}</if>
+        <if test="hasHouse != null  and hasHouse != ''"> and has_house = #{hasHouse}</if>
+        <if test="hasCar != null  and hasCar != ''"> and has_car = #{hasCar}</if>
+        <if test="hasWarranty != null  and hasWarranty != ''"> and has_warranty = #{hasWarranty}</if>
+        <if test="hasWeilidai != null  and hasWeilidai != ''"> and has_weilidai = #{hasWeilidai}</if>
+        <if test="hasCreditCard != null  and hasCreditCard != ''"> and has_credit_card = #{hasCreditCard}</if>
+        <if test="hasAccumulation != null  and hasAccumulation != ''"> and has_accumulation = #{hasAccumulation}</if>
+        <if test="hasSocial != null  and hasSocial != ''"> and has_social = #{hasSocial}</if>
+        <if test="customerType != null  and customerType != ''"> and customer_type = #{customerType}</if>
+        <!--<if test="deptId != null "> and dept_id = #{deptId}</if>-->
+        <if test="userId != null "> and yc.user_id = #{userId}</if>
+        <if test="customerSalary != null  and customerSalary != ''"> and customer_salary = #{customerSalary}</if>
+        <!-- 未跟进天数，当前时间减去最后备注时间得到天数 -->
+        <if test="params.noDays != null and params.noDays != ''"> and datediff(NOW(),yc.remark_time)>= #{params.noDays}</if>
+        <if test="params.beginRemarkTime != null and params.beginRemarkTime != ''"><!-- 备注开始时间检索 -->
+            AND date_format(yc.remark_time,'%y%m%d') &gt;= date_format(#{params.beginRemarkTime},'%y%m%d')
+        </if>
+        <if test="params.endRemarkTime != null and params.endRemarkTime != ''"><!-- 备注结束时间检索 -->
+            AND date_format(yc.remark_time,'%y%m%d') &lt;= date_format(#{params.endRemarkTime},'%y%m%d')
+        </if>
+        <!-- 当传入的为部门id时，查询改部门及以下的所有数据 -->
+        <!-- select dept_id from sys_dept where find_in_set(#{params.deptId}, ancestors) 是查询该部门的子部门id -->
+        <if test="params.deptId != null  and params.deptId != ''"> and (d.dept_id in (select dept_id from sys_dept where find_in_set(#{params.deptId}, ancestors)) or d.dept_id = #{params.deptId})</if>
+        <!-- 数据范围过滤 -->
+        ${params.dataScope}
+    </select>
+
+<select id="selectYmswCustomerById" parameterType="Long" resultMap="YmswCustomerResult">
+    <include refid="selectYmswCustomerVo"/>
+    where customer_id = #{customerId}
+</select>
+
+<insert id="insertYmswCustomer" parameterType="YmswCustomer" useGeneratedKeys="true" keyProperty="customerId">
+    insert into ymsw_customer
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+        <if test="customerName != null  and customerName != ''">customer_name,</if>
+        <if test="customerSex != null  and customerSex != ''">customer_sex,</if>
+        <if test="customerPhone != null  and customerPhone != ''">customer_phone,</if>
+        <if test="customerStatus != null  and customerStatus != ''">customer_status,</if>
+        <if test="phoneStatus != null  and phoneStatus != ''">phone_status,</if>
+        <if test="customerBirth != null ">customer_birth,</if>
+        <if test="customerQuota != null ">customer_quota,</if>
+        <if test="customerStar != null ">customer_star,</if>
+        <if test="applyTime != null ">apply_time,</if>
+        <if test="hasHouse != null  and hasHouse != ''">has_house,</if>
+        <if test="hasCar != null  and hasCar != ''">has_car,</if>
+        <if test="hasWarranty != null  and hasWarranty != ''">has_warranty,</if>
+        <if test="hasWeilidai != null  and hasWeilidai != ''">has_weilidai,</if>
+        <if test="hasCreditCard != null  and hasCreditCard != ''">has_credit_card,</if>
+        <if test="hasAccumulation != null  and hasAccumulation != ''">has_accumulation,</if>
+        <if test="hasSocial != null  and hasSocial != ''">has_social,</if>
+        <if test="isOverdue != null  and isOverdue != ''">is_overdue,</if>
+        <if test="customerType != null  and customerType != ''">customer_type,</if>
+        <if test="deptId != null ">dept_id,</if>
+        <if test="userId != null ">user_id,</if>
+        <if test="customerOccupation != null  and customerOccupation != ''">customer_occupation,</if>
+        <if test="customerSalary != null  and customerSalary != ''">customer_salary,</if>
+        <if test="channel != null  and channel != ''">channel,</if>
+        <if test="remarkTime != null ">remark_time,</if>
+        <if test="distributeTime != null ">distribute_time,</if>
+     </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+        <if test="customerName != null  and customerName != ''">#{customerName},</if>
+        <if test="customerSex != null  and customerSex != ''">#{customerSex},</if>
+        <if test="customerPhone != null  and customerPhone != ''">#{customerPhone},</if>
+        <if test="customerStatus != null  and customerStatus != ''">#{customerStatus},</if>
+        <if test="phoneStatus != null  and phoneStatus != ''">#{phoneStatus},</if>
+        <if test="customerBirth != null ">#{customerBirth},</if>
+        <if test="customerQuota != null ">#{customerQuota},</if>
+        <if test="customerStar != null ">#{customerStar},</if>
+        <if test="applyTime != null ">#{applyTime},</if>
+        <if test="hasHouse != null  and hasHouse != ''">#{hasHouse},</if>
+        <if test="hasCar != null  and hasCar != ''">#{hasCar},</if>
+        <if test="hasWarranty != null  and hasWarranty != ''">#{hasWarranty},</if>
+        <if test="hasWeilidai != null  and hasWeilidai != ''">#{hasWeilidai},</if>
+        <if test="hasCreditCard != null  and hasCreditCard != ''">#{hasCreditCard},</if>
+        <if test="hasAccumulation != null  and hasAccumulation != ''">#{hasAccumulation},</if>
+        <if test="hasSocial != null  and hasSocial != ''">#{hasSocial},</if>
+        <if test="isOverdue != null  and isOverdue != ''">#{isOverdue},</if>
+        <if test="customerType != null  and customerType != ''">#{customerType},</if>
+        <if test="deptId != null ">#{deptId},</if>
+        <if test="userId != null ">#{userId},</if>
+        <if test="customerOccupation != null  and customerOccupation != ''">#{customerOccupation},</if>
+        <if test="customerSalary != null  and customerSalary != ''">#{customerSalary},</if>
+        <if test="channel != null  and channel != ''">#{channel},</if>
+        <if test="remarkTime != null ">#{remarkTime},</if>
+        <if test="distributeTime != null ">#{distributeTime},</if>
+     </trim>
+</insert>
+
+<update id="updateYmswCustomer" parameterType="YmswCustomer">
+    update ymsw_customer
+    <trim prefix="SET" suffixOverrides=",">
+        <if test="customerName != null  and customerName != ''">customer_name = #{customerName},</if>
+        <if test="customerSex != null  and customerSex != ''">customer_sex = #{customerSex},</if>
+        <if test="customerPhone != null  and customerPhone != ''">customer_phone = #{customerPhone},</if>
+        <if test="customerStatus != null  and customerStatus != ''">customer_status = #{customerStatus},</if>
+        <if test="phoneStatus != null  and phoneStatus != ''">phone_status = #{phoneStatus},</if>
+        <if test="customerStar != null">customer_star = #{customerStar},</if>
+        <if test="customerBirth != null ">customer_birth = #{customerBirth},</if>
+        <if test="customerQuota != null ">customer_quota = #{customerQuota},</if>
+        <if test="applyTime != null ">apply_time = #{applyTime},</if>
+        <if test="hasHouse != null  and hasHouse != ''">has_house = #{hasHouse},</if>
+        <if test="hasCar != null  and hasCar != ''">has_car = #{hasCar},</if>
+        <if test="hasWarranty != null  and hasWarranty != ''">has_warranty = #{hasWarranty},</if>
+        <if test="hasWeilidai != null  and hasWeilidai != ''">has_weilidai = #{hasWeilidai},</if>
+        <if test="hasSocial != null  and hasSocial != ''">has_social = #{hasSocial},</if>
+        <if test="hasCreditCard != null  and hasCreditCard != ''">has_credit_card = #{hasCreditCard},</if>
+        <if test="hasAccumulation != null  and hasAccumulation != ''">has_accumulation = #{hasAccumulation},</if>
+        <if test="isOverdue != null  and isOverdue != ''">is_overdue = #{isOverdue},</if>
+        <if test="customerType != null  and customerType != ''">customer_type = #{customerType},</if>
+        <if test="deptId != null ">dept_id = #{deptId},</if>
+        <if test="userId != null ">user_id = #{userId},</if>
+        <if test="customerOccupation != null  and customerOccupation != ''">customer_occupation = #{customerOccupation},</if>
+        <if test="customerSalary != null  and customerSalary != ''">customer_salary = #{customerSalary},</if>
+        <if test="channel != null  and channel != ''">channel = #{channel},</if>
+        <if test="remarkTime != null ">remark_time = #{remarkTime},</if>
+        <if test="distributeTime != null ">distribute_time = #{distributeTime},</if>
+    </trim>
+    where customer_id = #{customerId}
+</update>
+
+<delete id="deleteYmswCustomerById" parameterType="Long">
+    delete from ymsw_customer where customer_id = #{customerId}
+</delete>
+
+<delete id="deleteYmswCustomerByIds" parameterType="String">
+    delete from ymsw_customer where customer_id in
+    <foreach item="customerId" collection="array" open="(" separator="," close=")">
+        #{customerId}
+    </foreach>
+</delete>
+
+<select id="selectLastYmswCustomerByPhone" parameterType="String" resultMap="YmswCustomerResult">
+    select customer_id, customer_name, customer_phone, apply_time from ymsw_customer
+    where customer_phone = #{customerPhone} order by apply_time desc limit 1
+</select>
+
+<update id="updateUseridToNull" parameterType="String">
+    update ymsw_customer set user_id = null where customer_id in
+    <foreach item="customerId" collection="list" open="(" separator="," close=")">
+        #{customerId}
+    </foreach>
+</update>
+
+<select id="getCustomerInfo" parameterType="String" resultMap="YmswCustomerResult">
+    select customer_id,customer_name,customer_phone,u.user_name,d.dept_name,yc.user_id from ymsw_customer yc
+    left join sys_user u on u.user_id = yc.user_id
+    left join sys_dept d on d.dept_id = u.dept_id
+    where customer_phone = #{customerPhone} order by apply_time desc limit 1
+</select>
+
+<!--查询出需要自动抽回的客户ids（查询出不在公共池和收藏夹里，且最后备注天数与当前时间的差大于days时的客户id）-->
+<select id="selectAutoReallocIds" parameterType="String" resultMap="YmswCustomerResult">
+    select yc.customer_id, yc.user_id
+    from ymsw_customer yc
+    left join ymsw_collection_pool ycp on yc.customer_id =ycp.customer_id
+    where ycp.customer_id is null
+    and datediff(NOW(),yc.remark_time) >= #{days}
+</select>
+
+    <!--批量修改客户的对应的user_id为userId,同时修改客户状态为再分配-->
+<update id="batchUpdateUserId">
+    update ymsw_customer set user_id = #{userId},distribute_time = CURRENT_TIMESTAMP,customer_type = '2' where customer_id in
+    <foreach item="customerId" collection="customerIds" open="(" separator="," close=")">
+        #{customerId}
+    </foreach>
+</update>
+
+    <!--按userId分组查询客户数（查询每个业务经理的客户数量）-->
+<select id="selectCount" resultType="Map">
+    select su.user_id as userId, count(yc.user_id)  as totalCount from sys_user su
+    left join  ymsw_customer yc on su.user_id=yc.user_id
+    where su.is_distribute = 'Y' and status = 0
+    GROUP BY su.user_id;
+</select>
+
+</mapper>

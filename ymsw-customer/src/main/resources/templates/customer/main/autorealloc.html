@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('自动抽回设置')"/>
+    <th:block th:include="include :: select2-css"/>
+    <style>body {font-size: 15px}</style>
+</head>
+<body style="background-color: #efefef;">
+<div class="container-div">
+    <div class="row search-collapse" style="padding-left: 30px">
+        <div style="margin-top: 15px;">
+            <strong>门店客户未跟进自动抽回设置 </strong>
+            <span th:switch="${sysConfig.configKey}">
+                <span th:case="0"><i class="fa fa-toggle-off text-info fa-2x" onclick="changeStatus(1)" style="display: inline-block;vertical-align: middle;"></i></span>
+                <span th:case="1"><i class="fa fa-toggle-on text-info fa-2x" onclick="changeStatus(0)" style="display: inline-block;vertical-align: middle;"></i></span>
+            </span>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <form class="form-inline">
+            未跟进自动抽回时间（/天）：
+            <div class="form-group">
+                <select id="configValue" th:with="type=${@dict.getType('customer_no_days')}" class="form-control">
+                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="${sysConfig.configValue}"></option>
+                </select>
+            </div>
+            <a class="btn btn-md btn-primary" onclick="submitConfig()">保 存</a>
+        </form>
+    </div>
+</div>
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: select2-js"/>
+<script>
+    //修改自动抽回状态
+    function changeStatus(value){
+        if (value == 1){
+            $.modal.confirm("确定要开启自动抽回吗？",function () {
+                $.operate.ajax(ctx + "system/config/editConfig","post","json",{"configKey":value,"configId":4})
+            })
+        }else {
+            $.modal.confirm("确定要关闭自动抽回吗？",function () {
+                $.operate.ajax(ctx + "system/config/editConfig","post","json",{"configKey":value,"configId":4})
+            })
+        }
+    }
+
+    //修改自动抽回天数
+    function submitConfig(){
+        var configValue = $("#configValue").val();
+        $.modal.confirm("确定修改自动抽回天数吗？",function () {
+            $.operate.ajax(ctx + "system/config/editConfig","post","json",{"configValue":configValue,"configId":4})
+        })
+    }
+
+</script>
+</body>
+</html>
